@@ -23,10 +23,6 @@ struct Creature {
 	features: Vec<Feature>
 }
 
-impl Creature {
-	
-}
-
 struct GameState {
 	creatures: Vec<Creature>,
 	names: HashMap<String, i32>,
@@ -73,6 +69,9 @@ impl GameState {
 	pub fn get_creature_mut(&mut self, id: CreatureId) -> &mut Creature {
 		&mut self.creatures[id]
 	}
+	pub fn find_creature(&self, name: &str) -> Option<CreatureId> {
+		self.creatures.iter().position(|x| x.name.as_str() == name)
+	}
 	pub fn round(&mut self) {
 		// creatures thinking V3 (sorta ECS with components as features)
 		player_system(self);
@@ -103,32 +102,42 @@ fn aggressive_system(state: &mut GameState) {
 }
 
 enum Command {
-	Attack(String)
+	Attack(CreatureId),
+	Examine(CreatureId)
 }
 
 impl Command {
-	fn get() -> Command {
+	fn get(state: &GameState) -> Command {
 		let stdin = io::stdin();
 		let mut buffer = String::new();
 		
 		loop {
 			stdin.read_line(&mut buffer).unwrap();
 			
-			if let Some(first_word) = buffer.find(' ') {
-				match &buffer[..first_word] {
-					"attack" => { 
-						if first
-						let target = String::from(&buffer[first_word+1..]);
-						break Command::Attack(target);
+			let parts: Vec<&str> = buffer.trim().split(' ').collect();
+			
+			match parts[0] {
+				"attack" => {
+					if parts.len() > 1 {
+						if let Some(target) = state.find_creature(parts[1]) {
+							break Command::Attack(target);
+						}
 					}
-					_ => {
-						println!("{}", &buffer[..first_word]);
-						println!("Please write a possible action: 'attack goblin1'");
-					}
+					println!("Please write a correct target: 'attack goblin1'");
 				}
-			} else {
-				println!("Please write a possible action: 'attack goblin1'");
+				"examine" => {
+					if parts.len() > 1 {
+						if let Some(target) = state.find_creature(parts[1]) {
+							break Command::Examine(target);
+						}
+					}
+					println!("Please write a correct target: 'examine goblin1'");
+				}
+				_ => {
+					println!("'{}' is not a correct command.", parts[0]);
+				}
 			}
+			
 			buffer.clear();
 		}
 	}
@@ -154,7 +163,26 @@ fn player_system(state: &mut GameState) {
 	}
 	println!("There are {} enemies: {}", (state.creatures.len() - 1).to_string(), creature_string);
 	
-	let chosen = Command::get();
+		println!("Enter a command:");
+	loop {
+		let chosen = Command::get(state);
+		
+		match chosen {
+			Command::Attack(target) => {
+				let damage = state.get_creature(0).damage;
+			
+				let mut victim = state.get_creature_mut(target);
+				victim.health -= damage;
+				println!("You hit {} for {} damage!", victim.name, damage.to_string());
+				break;
+			}
+			Command::Examine(target) => {
+				let mut creature = state.get_creature(target);
+				println!("{} has {} hitpoints remaining and does {} damage.", creature.name, creature.health, creature.damage);
+			}
+		}
+		println!("Enter another command:");
+	}
 }
 
 fn main() {
