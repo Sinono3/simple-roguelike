@@ -1,5 +1,6 @@
 use std::io;
 use std::io::prelude::*;
+use std::collections::HashMap;
 
 type CreatureId = usize;
 
@@ -28,23 +29,33 @@ impl Creature {
 
 struct GameState {
 	creatures: Vec<Creature>,
+	names: HashMap<String, i32>,
 	player: CreatureId,
 	aggressive: Vec<CreatureId>
 }
 
 impl GameState {
-	pub fn new(player: Creature) -> GameState{
+	pub fn new(player: Creature) -> GameState {
 		let mut state = GameState {
 			creatures: Vec::new(),
+			names: HashMap::new(),
 			player: 0,
 			aggressive: Vec::new()
 		};
 		state.add_creature(player);
 		state
 	}
-	pub fn add_creature(&mut self, creature: Creature) -> CreatureId {
-		let id = self.creatures.len();
+	pub fn add_creature(&mut self, mut creature: Creature) -> CreatureId {
+		// prevent same name.
+		if let Some(count) = self.names.get_mut(&creature.name) {
+			*count += 1;
+			creature.name.push_str(&count.to_string());
+		} else {
+			self.names.insert(creature.name.clone(), 1);
+		}
 		
+		// put in respective featured list.
+		let id = self.creatures.len();
 		for feature in &creature.features {
 			match feature {
 				Feature::Aggression => {
@@ -62,6 +73,11 @@ impl GameState {
 	pub fn get_creature_mut(&mut self, id: CreatureId) -> &mut Creature {
 		&mut self.creatures[id]
 	}
+	pub fn round(&mut self) {
+		// creatures thinking V3 (sorta ECS with components as features)
+		player_system(self);
+		aggressive_system(self);
+	}
 }
 
 #[derive(Copy, Clone)]
@@ -70,41 +86,75 @@ struct Attack {
 	victim: CreatureId
 }
 
-struct Battle {
-	involved: Vec<CreatureId>,
-	attack_batch: Vec<Attack>
+fn aggressive_system(state: &mut GameState) {
+	for i in 0..state.aggressive.len() {
+		let aggressive_id = state.aggressive[i];
+		
+		let (name, damage) = {
+			let thinker = state.get_creature(aggressive_id);
+			(thinker.name.clone(), thinker.damage)
+		};
+		
+		let mut victim = state.get_creature_mut(0);
+		victim.health -= damage;
+		println!("{} hit {} for {} damage!", name, victim.name, damage.to_string());
+		pause();
+	}
 }
 
-impl Battle {
-	pub fn new() -> Battle {
-		Battle {
-			involved: Vec::new(),
-			attack_batch: Vec::new()
-		}
-	}
-	pub fn involve(&mut self, id: CreatureId) {
-		self.involved.push(id);
-		// TODO: add a message announcing this.
-	}
-	// TODO: be able to involve more than one creature at once.
-	pub fn round(&mut self, state: &mut GameState) {
-		// creatures thinking V3 (sorta ECS with components as features)
-		for i in 0..state.aggressive.len() {
-			let aggressive_id = state.aggressive[i];
+enum Command {
+	Attack(String)
+}
+
+impl Command {
+	fn get() -> Command {
+		let stdin = io::stdin();
+		let mut buffer = String::new();
+		
+		loop {
+			stdin.read_line(&mut buffer).unwrap();
 			
-			if self.involved.contains(&aggressive_id) {
-				let (name, damage) = {
-					let thinker = state.get_creature(aggressive_id);
-					(thinker.name.clone(), thinker.damage)
-				};
-				
-				let mut victim = state.get_creature_mut(0);
-				victim.health -= damage;
-				println!("{} hit {} for {} damage!", name, victim.name, damage.to_string());
-				pause();
+			if let Some(first_word) = buffer.find(' ') {
+				match &buffer[..first_word] {
+					"attack" => { 
+						if first
+						let target = String::from(&buffer[first_word+1..]);
+						break Command::Attack(target);
+					}
+					_ => {
+						println!("{}", &buffer[..first_word]);
+						println!("Please write a possible action: 'attack goblin1'");
+					}
+				}
+			} else {
+				println!("Please write a possible action: 'attack goblin1'");
 			}
+			buffer.clear();
 		}
 	}
+}
+
+fn player_system(state: &mut GameState) {
+	// Player control consists of three phases:
+	let player = state.get_creature_mut(state.player);
+	
+	// Show the enviroment and conditions:
+	println!("You have {} hitpoints left.", player.health);
+	
+	let mut creature_string = String::new();
+	
+	for id in 0..state.creatures.len() {
+		if id == state.player {
+			continue;
+		}
+		let creature = state.get_creature(id);
+		creature_string.push_str(
+			format!("{}; ", creature.name).as_str()
+			);
+	}
+	println!("There are {} enemies: {}", (state.creatures.len() - 1).to_string(), creature_string);
+	
+	let chosen = Command::get();
 }
 
 fn main() {
@@ -120,19 +170,12 @@ fn main() {
 		damage: 2,
 		features: vec![Feature::Aggression]
 	};
-	let _goblin1 = Creature {
-		name: String::from("goblin"),
-		health: 12,
-		damage: 2,
-		features: vec![]
-	};
 	let mut state = GameState::new(human_warrior.clone());
-	let mut battle = Battle::new();
 	
-	battle.involve(0);
-	battle.involve(state.add_creature(goblin.clone()));
+	state.add_creature(goblin.clone());
+	state.add_creature(goblin.clone());
 	
 	loop {
-		battle.round(&mut state);
+		state.round();
 	}
 }
