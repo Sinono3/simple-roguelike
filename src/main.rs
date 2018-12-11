@@ -5,30 +5,31 @@ type CreatureId = usize;
 
 fn pause() {
     // Read a single byte and discard
-    let _ = io::stdin().read(&mut [0u8]).unwrap();
-    let _ = io::stdin().read(&mut [0u8]).unwrap();
+    let _ = io::stdin().read(&mut [1u8]).unwrap();
+    let _ = io::stdin().read(&mut [1u8]).unwrap();
+}
+
+#[derive(Clone)]
+enum Feature {
+	Aggression
 }
 
 #[derive(Clone)]
 struct Creature {
 	name: String,
 	health: i32,
-	damage: i32
+	damage: i32,
+	features: Vec<Feature>
 }
 
-/*impl Creature {
-	fn think(&mut self, battle: &mut Battle) {
-		battle.attack(Attack {
-			inflictor: *creature,
-			victim: 0
-		});
-	}
-}*/
+impl Creature {
+	
+}
 
 struct GameState {
 	creatures: Vec<Creature>,
 	player: CreatureId,
-	enemies: Vec<CreatureId>
+	aggressive: Vec<CreatureId>
 }
 
 impl GameState {
@@ -36,7 +37,7 @@ impl GameState {
 		let mut state = GameState {
 			creatures: Vec::new(),
 			player: 0,
-			enemies: Vec::new()
+			aggressive: Vec::new()
 		};
 		state.add_creature(player);
 		state
@@ -51,6 +52,20 @@ impl GameState {
 	}
 	pub fn get_creature_mut(&mut self, i: CreatureId) -> &mut Creature {
 		&mut self.creatures[i]
+	}
+	pub fn check_new_features(&mut self) {
+		for i in 0..self.creatures.len() {
+			println!("");
+			for feature in &self.creatures[i].features {
+				match feature {
+					Feature::Aggression => {
+						if !self.aggressive.contains(&i) {
+							self.aggressive.push(i);
+						}
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -77,23 +92,39 @@ impl Battle {
 		// TODO: add a message announcing this.
 	}
 	// TODO: be able to involve more than one creature at once.
-	pub fn attack(&mut self, attack: Attack) {
-		self.attack_batch.push(attack);
-	}
 	pub fn round(&mut self, state: &mut GameState) {
-		// creatures thinking.
-		/*for creature in &self.involved {
-			creature.think(&mut self, );
-		}*/
-		
-		// attacks are being processed.
-		for attack in self.attack_batch.drain(..) {
-			let inflictor = state.get_creature(attack.inflictor).clone();
-			let victim = state.get_creature_mut(attack.victim);
+		// creatures thinking V2
+		/*for i in 0..self.involved.len() {
+			let inflictor_id = self.involved[i];
+			let (name, damage) = {
+				let mut thinker = state.get_creature(inflictor_id);
+				(thinker.name.clone(), thinker.damage)
+			};
 			
-			victim.health -= inflictor.damage;
-			println!("{} {} hit {} for {} damage!", inflictor.name, attack.inflictor, victim.name, inflictor.damage.to_string());
+			let mut victim = state.get_creature_mut(0);
+			victim.health -= damage;
+			println!("{} hit {} for {} damage!", name, victim.name, damage.to_string());
 			pause();
+		}*/
+		// creatures thinking V3 (sorta ECS with components as features)
+		for i in 0..state.aggressive.len() {
+			let inflictor_id = state.aggressive[i];
+			
+			if self.involved.contains(&inflictor_id) {
+				println!("CREATURE {} IS AGGRESSIVE!", inflictor_id.to_string());
+				
+				let (name, damage) = {
+					let mut thinker = state.get_creature(inflictor_id);
+					(thinker.name.clone(), thinker.damage)
+				};
+				
+				let mut victim = state.get_creature_mut(0);
+				victim.health -= damage;
+				println!("{} hit {} for {} damage!", name, victim.name, damage.to_string());
+				pause();
+			} else {
+				println!("ok pass {:?} !===== {:?}", self.involved, inflictor_id);
+			}
 		}
 	}
 }
@@ -102,23 +133,29 @@ fn main() {
 	let human_warrior = Creature {
 		name: String::from("human warrior"),
 		health: 20,
-		damage: 4
+		damage: 4,
+		features: vec![]
 	};
 	let goblin = Creature {
 		name: String::from("goblin"),
 		health: 12,
-		damage: 2
+		damage: 2,
+		features: vec![Feature::Aggression]
+	};
+	let goblin1 = Creature {
+		name: String::from("goblin"),
+		health: 12,
+		damage: 2,
+		features: vec![]
 	};
 	let mut state = GameState::new(human_warrior.clone());
 	let mut battle = Battle::new();
 	
+	battle.involve(0);
 	battle.involve(state.add_creature(goblin.clone()));
 	
 	loop {
-		battle.attack(Attack {
-				inflictor: 1,
-				victim: 0
-		});
+		state.check_new_features();
 		battle.round(&mut state);
 	}
 }
