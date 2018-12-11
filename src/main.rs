@@ -43,29 +43,24 @@ impl GameState {
 		state
 	}
 	pub fn add_creature(&mut self, creature: Creature) -> CreatureId {
-		self.creatures.push(creature);
-		self.creatures.len() - 1
-	}
-	// TODO: be able to add more than 1 creature at once, and return a slice of creature ids.
-	pub fn get_creature(&self, i: CreatureId) -> &Creature {
-		&self.creatures[i]
-	}
-	pub fn get_creature_mut(&mut self, i: CreatureId) -> &mut Creature {
-		&mut self.creatures[i]
-	}
-	pub fn check_new_features(&mut self) {
-		for i in 0..self.creatures.len() {
-			println!("");
-			for feature in &self.creatures[i].features {
-				match feature {
-					Feature::Aggression => {
-						if !self.aggressive.contains(&i) {
-							self.aggressive.push(i);
-						}
-					}
+		let id = self.creatures.len();
+		
+		for feature in &creature.features {
+			match feature {
+				Feature::Aggression => {
+					self.aggressive.push(id);
 				}
 			}
 		}
+		self.creatures.push(creature);
+		id
+	}
+	// TODO: be able to add more than 1 creature at once, and return a slice of creature ids.
+	pub fn get_creature(&self, id: CreatureId) -> &Creature {
+		&self.creatures[id]
+	}
+	pub fn get_creature_mut(&mut self, id: CreatureId) -> &mut Creature {
+		&mut self.creatures[id]
 	}
 }
 
@@ -93,28 +88,13 @@ impl Battle {
 	}
 	// TODO: be able to involve more than one creature at once.
 	pub fn round(&mut self, state: &mut GameState) {
-		// creatures thinking V2
-		/*for i in 0..self.involved.len() {
-			let inflictor_id = self.involved[i];
-			let (name, damage) = {
-				let mut thinker = state.get_creature(inflictor_id);
-				(thinker.name.clone(), thinker.damage)
-			};
-			
-			let mut victim = state.get_creature_mut(0);
-			victim.health -= damage;
-			println!("{} hit {} for {} damage!", name, victim.name, damage.to_string());
-			pause();
-		}*/
 		// creatures thinking V3 (sorta ECS with components as features)
 		for i in 0..state.aggressive.len() {
-			let inflictor_id = state.aggressive[i];
+			let aggressive_id = state.aggressive[i];
 			
-			if self.involved.contains(&inflictor_id) {
-				println!("CREATURE {} IS AGGRESSIVE!", inflictor_id.to_string());
-				
+			if self.involved.contains(&aggressive_id) {
 				let (name, damage) = {
-					let mut thinker = state.get_creature(inflictor_id);
+					let thinker = state.get_creature(aggressive_id);
 					(thinker.name.clone(), thinker.damage)
 				};
 				
@@ -122,8 +102,6 @@ impl Battle {
 				victim.health -= damage;
 				println!("{} hit {} for {} damage!", name, victim.name, damage.to_string());
 				pause();
-			} else {
-				println!("ok pass {:?} !===== {:?}", self.involved, inflictor_id);
 			}
 		}
 	}
@@ -142,7 +120,7 @@ fn main() {
 		damage: 2,
 		features: vec![Feature::Aggression]
 	};
-	let goblin1 = Creature {
+	let _goblin1 = Creature {
 		name: String::from("goblin"),
 		health: 12,
 		damage: 2,
@@ -155,7 +133,6 @@ fn main() {
 	battle.involve(state.add_creature(goblin.clone()));
 	
 	loop {
-		state.check_new_features();
 		battle.round(&mut state);
 	}
 }
