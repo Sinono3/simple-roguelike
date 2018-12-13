@@ -10,15 +10,13 @@ fn main() {
 		name: String::from("human warrior"),
 		health: 20,
 		damage: 4,
-		features: vec![Feature::Playable],
-		current_victims: vec![]
+		features: vec![Feature::Playable]
 	};
 	let goblin = Creature {
 		name: String::from("goblin"),
 		health: 12,
 		damage: 2,
-		features: vec![Feature::Aggression],
-		current_victims: vec![]
+		features: vec![Feature::Aggression]
 	};
 	let mut state = GameState::new(human_warrior.clone());
 	

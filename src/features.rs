@@ -55,8 +55,32 @@ impl GameState {
 		// everything thinking V3 (sorta ECS with components as features)
 		player_system(self);
 		aggressive_system(self);
-		// queues which will be executed at the end
-		attack_queue(self);
+	}
+	// Hits a creature with the inflictor's name and damage.
+	pub fn hit(&mut self, inflictor_id: CreatureId, target_id: CreatureId) {
+		// get name and damage from inflictor
+		let (name, damage) = {
+			let inflictor = self.get_creature(inflictor_id);
+			(inflictor.name.clone(), inflictor.damage)
+		};
+		// get name and apply damage to target
+		let target_name = {
+			let target = self.get_creature_mut(target_id);
+			target.health -= damage;
+			target.name.clone()
+		};
+		// english stuff
+		let target_str = if target_id == self.player {
+				"you".to_owned()
+			} else {
+				target_name
+			};
+		let inflictor_str = if inflictor_id == self.player {
+				"You hit".to_owned()
+			} else {
+				format!("{} hit", name)
+			};
+		println!("{} {} for {} damage.", inflictor_str, target_str, damage.to_string());
 	}
 }
 
@@ -68,8 +92,7 @@ pub enum Feature {
 
 fn aggressive_system(state: &mut GameState) {
 	for i in 0..state.aggressive.len() {
-		let creature = state.get_creature_mut(state.aggressive[i]);
-		creature.current_victims.push(0);
+		state.hit(state.aggressive[i], 0); // THE 0 IS FOR TESTING PURPOSES
 	}
 }
 
@@ -82,24 +105,23 @@ fn player_system(state: &mut GameState) {
 	
 	let mut creature_string = String::new();
 	
-	for id in 0..state.creatures.len() {
-		if id == state.player {
-			continue;
-		}
-		let creature = state.get_creature(id);
+	for (_id, creature) in state.creatures.iter()
+										  .enumerate()
+										  .filter(|(id, _x)| *id != state.player) {
 		creature_string.push_str(
 			format!("{}; ", creature.name).as_str()
 			);
 	}
 	println!("There are {} enemies: {}", (state.creatures.len() - 1).to_string(), creature_string);
 	
-		println!("Enter a command:");
+	// Ask for player input
+	println!("Enter a command:");
 	loop {
 		let chosen = Command::get(state);
 		
 		match chosen {
 			Command::Attack(target) => {
-				state.get_creature_mut(0).current_victims.push(target);
+				state.hit(state.player, target);
 				break;
 			}
 			Command::Examine(target) => {
@@ -108,32 +130,5 @@ fn player_system(state: &mut GameState) {
 			}
 		}
 		println!("Enter another command:");
-	}
-}
-fn attack_queue(state: &mut GameState) {
-	for id in 0..state.creatures.len() {
-		let (name, damage, victims) = {
-			let inflictor = state.get_creature_mut(id);
-			
-			if inflictor.current_victims.len() < 1 {
-				continue;
-			}
-			(inflictor.name.clone(), inflictor.damage, inflictor.current_victims.clone())
-		};
-		
-		let player = state.player;
-		for victim_id in victims {
-			let mut victim = state.get_creature_mut(victim_id);
-			victim.health -= damage;
-			
-			if id != player {
-				println!("{} hit {} for {} damage!", name, victim.name, damage.to_string());
-			} else {
-				println!("You hit {} for {} damage!", victim.name, damage.to_string());
-			}
-			
-			pause();
-		}
-		state.get_creature_mut(id).current_victims.clear();
 	}
 }

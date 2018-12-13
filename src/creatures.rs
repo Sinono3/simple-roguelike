@@ -7,6 +7,5 @@ pub struct Creature {
 	pub name: String,
 	pub health: i32,
 	pub damage: i32,
-	pub features: Vec<Feature>,
-	pub current_victims: Vec<CreatureId>
+	pub features: Vec<Feature>
 }
