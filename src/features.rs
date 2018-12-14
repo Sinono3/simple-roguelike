@@ -199,7 +199,13 @@ fn player_system(state: &mut GameState) {
 		);
 		count += 1;
 	}
-	println!("== There are {} enemies remaining: {}", count.to_string(), creature_string);
+
+	if count == 0 {
+		println!("=============== You WIN! ==============");
+	}
+	else {
+			println!("== There are {} enemies remaining: {}", count.to_string(), creature_string);
+	}
 
 	// 2- Ask for player input
 	println!("Enter a command:");
