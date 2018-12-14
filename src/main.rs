@@ -7,10 +7,10 @@ use crate::features::*;
 
 fn main() {
 	let human_warrior = Creature {
-		name: String::from("human warrior"),
+		name: String::from("human_warrior"),
 		health: 20,
 		damage: 4,
-		features: vec![Feature::Playable]
+		features: vec![]
 	};
 	let goblin = Creature {
 		name: String::from("goblin"),
@@ -19,10 +19,10 @@ fn main() {
 		features: vec![Feature::Aggression]
 	};
 	let mut state = GameState::new(human_warrior.clone());
-	
-	state.add_creature(goblin.clone());
-	state.add_creature(goblin.clone());
-	
+
+	state.creatures.add(goblin.clone());
+	state.creatures.add(goblin.clone());
+
 	loop {
 		state.round();
 	}

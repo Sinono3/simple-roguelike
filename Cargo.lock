@@ -9,16 +9,16 @@ dependencies = [
 ]
 
 [[package]]
-name = "extremely-simple-roguelike"
+name = "libc"
+version = "0.2.44"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "simple-roguelike"
 version = "0.1.0"
 dependencies = [
  "crossterm 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
-
-[[package]]
-name = "libc"
-version = "0.2.44"
-source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "termios"

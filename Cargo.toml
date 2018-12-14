@@ -1,5 +1,5 @@
 [package]
-name = "extremely-simple-roguelike"
+name = "simple-roguelike"
 version = "0.1.0"
 authors = ["Sinono3 <thesprinter79@gmail.com>"]
 edition = "2018"
