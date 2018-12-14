@@ -15,9 +15,9 @@ const DEBUG_MODE_ENABLED: bool = true;
 pub enum Command {
 	Attack(CreatureId),
 	Examine(CreatureId),
-    Debug(DebugCommand),
-	Status(),
-	Error()
+	Status,
+    Help,
+    Debug(DebugCommand)
 }
 pub enum DebugCommand {
     Remove(CreatureId)
@@ -27,18 +27,18 @@ impl Command {
 	pub fn get(state: &GameState) -> Command {
 		let stdin = io::stdin();
 		let mut input_string_buffer = String::new();
-		
+
 
 		loop {
-			
+
 			stdin.read_line(&mut input_string_buffer).unwrap();
-			
-			
+
+
 			let parts: Vec<&str> = input_string_buffer.trim().split(' ').collect();
 
             // The repetition of parts.len() > 1 is acknowledged but is necessary due to one-worded
-            // commands, which will be implemented in later versions of the engine/game.
-		
+            // commands, such as 'status' or 'help'
+
 			match parts[0] {
 				"attack" => {
 					if parts.len() > 1 {
@@ -46,7 +46,7 @@ impl Command {
 							break Command::Attack(target);
 						}
 					}
-					println!("Please write a correct target: eg: 'attack goblin'.");
+					println!("Please write a correct target: ex: 'attack goblin'.");
 				}
 				"examine" => {
 					if parts.len() > 1 {
@@ -54,19 +54,13 @@ impl Command {
 							break Command::Examine(target);
 						}
 					}
-					println!("Please write a correct target: eg: 'examine goblin'.");
+					println!("Please write a correct target: ex: 'examine goblin'.");
 				}
 				"status" => {
-					break Command::Status();
+					break Command::Status;
 				}
 				"help" => {
-					println!("For play you have this commands: \n
-	attack: Attack to enemies\n
-		Usage=> attack name_of_enemy\n
-	examine\n
-	status: Show the actual game status\n"								
-					);
-					
+    				break Command::Help;
 				}
                 "debug" => {
                     if DEBUG_MODE_ENABLED {
@@ -89,7 +83,6 @@ impl Command {
                 }
 				_ => {
 					println!("'{}' is not a correct command.", parts[0]);
-					break Command::Error();
 				}
 			}
 

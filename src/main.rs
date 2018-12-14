@@ -21,11 +21,11 @@ fn main() {
 	let mut state = GameState::new(human_warrior.clone());
 
 	println!("##########################################");
-	println!("########## Simple roguelike game #########");
+	println!("######### Simple Rusty Roguelike #########");
 	println!("##########################################");
 
-	println!("\n ..... You are a warrior and you have defeat your enemies\n");
-	println!("Type help for view the command list");
+	println!("\n## You're the only human warrior left and must defeat all enemies!\n");
+	println!("Type 'help' to see the available commands.");
 	state.creatures.add(goblin.clone());
 	state.creatures.add(goblin.clone());
 

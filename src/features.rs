@@ -178,12 +178,13 @@ fn aggressive_system(state: &mut GameState) {
 fn player_system(state: &mut GameState) {
 	// Can unwrap here because the player should exist.
 	// If not then why should the game even be running.
-	let player = state.creatures.get(PLAYER_INDEX)
-								.expect("Game logic error: the player is dead and the game is still running.");
+	let player_health = state.creatures.get(PLAYER_INDEX)
+									   .expect("Game logic error: the player is dead and the game is still running.")
+									   .health;
 
 	// Player control consists of three phases:
 	// 1- Show the enviroment and conditions:
-	println!("== You have {} hitpoints left.", player.health);
+	println!("== You have {} hitpoints remaining.", player_health);
 
 	let mut creature_string = String::new();
 
@@ -198,7 +199,7 @@ fn player_system(state: &mut GameState) {
 		);
 		count += 1;
 	}
-	println!("== There are {} enemies: {}", count.to_string(), creature_string);
+	println!("== There are {} enemies remaining: {}", count.to_string(), creature_string);
 
 	// 2- Ask for player input
 	println!("Enter a command:");
@@ -209,8 +210,6 @@ fn player_system(state: &mut GameState) {
 		match chosen {
 			Command::Attack(target) => {
 				break state.hit(PLAYER_INDEX, target);
-				
-				
 			}
 			Command::Examine(target) => {
 				let creature = state.creatures.get(target)
@@ -218,17 +217,20 @@ fn player_system(state: &mut GameState) {
 				println!("{} has {} hitpoints remaining and does {} damage.", creature.name, creature.health, creature.damage);
 				pause();
 			}
+			Command::Status => {
+				println!("== You have {} hitpoints remaining.", player_health);
+				println!("== There are {} enemies remaining: {}", count.to_string(), creature_string)
+			}
+			Command::Help => {
+				println!("The available commands are:
+attack: Hit enemies. Usage: 'attack enemy_name'
+examine: Shows the status of a creature. Usage: 'examine enemy_name'
+status: Show your character's status and remaining enemies."
+				);
+			}
 			Command::Debug(DebugCommand::Remove(target)) => {
-				let creature = state.creatures.remove(target);
+				let creature: Creature = state.creatures.remove(target);
 				println!("Creature '{}' with the id {} has been removed from the game.", creature.name, target);
-				pause();
-				break;
-			}
-			Command::Status() => {
-				println!("== There are {} enemies: {}", count.to_string(), creature_string)
-			}
-			Command::Error() => {
-
 			}
 		}
 		println!("Enter another command:");
