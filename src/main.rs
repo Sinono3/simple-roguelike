@@ -23,6 +23,8 @@ fn main() {
 	println!("##########################################");
 	println!("########## Simple roguelike game #########");
 	println!("##########################################");
+
+	println!("\n ..... You are a warrior and you have defeat your enemies\n");
 	state.creatures.add(goblin.clone());
 	state.creatures.add(goblin.clone());
 
