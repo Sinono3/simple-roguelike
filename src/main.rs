@@ -36,7 +36,7 @@ fn main() {
 	state.creatures.add(goblin.clone());
 	state.creatures.add(goblin.clone());
 
-	loop {
-		state.round();
+	while state.round() {
+		//playing
 	}
 }

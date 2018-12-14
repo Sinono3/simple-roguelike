@@ -109,10 +109,12 @@ impl GameState {
 		state.creatures.add(player);
 		state
 	}
-	pub fn round(&mut self) {
+	pub fn round(&mut self) -> bool {
 		// everything thinking V3 (sorta ECS with components as features)
 		player_system(self);
 		aggressive_system(self);
+		
+		true //player_system must return this, if false close the game for menu purpose
 	}
 	// Hits a creature with the inflictor's name and damage.
 	pub fn hit(&mut self, inflictor_id: CreatureId, target_id: CreatureId) {
