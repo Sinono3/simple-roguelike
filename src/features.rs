@@ -183,7 +183,7 @@ fn player_system(state: &mut GameState) {
 
 	// Player control consists of three phases:
 	// 1- Show the enviroment and conditions:
-	println!("You have {} hitpoints left.", player.health);
+	println!("== You have {} hitpoints left.", player.health);
 
 	let mut creature_string = String::new();
 
@@ -198,7 +198,7 @@ fn player_system(state: &mut GameState) {
 		);
 		count += 1;
 	}
-	println!("There are {} enemies: {}", count.to_string(), creature_string);
+	println!("== There are {} enemies: {}", count.to_string(), creature_string);
 
 	// 2- Ask for player input
 	println!("Enter a command:");
