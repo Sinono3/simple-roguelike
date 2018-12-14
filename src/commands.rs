@@ -15,7 +15,8 @@ const DEBUG_MODE_ENABLED: bool = true;
 pub enum Command {
 	Attack(CreatureId),
 	Examine(CreatureId),
-    Debug(DebugCommand)
+    Debug(DebugCommand),
+	Status()
 }
 pub enum DebugCommand {
     Remove(CreatureId)
@@ -41,7 +42,7 @@ impl Command {
 							break Command::Attack(target);
 						}
 					}
-					println!("Please write a correct target: 'attack goblin'.");
+					println!("Please write a correct target: eg: 'attack goblin'.");
 				}
 				"examine" => {
 					if parts.len() > 1 {
@@ -49,7 +50,19 @@ impl Command {
 							break Command::Examine(target);
 						}
 					}
-					println!("Please write a correct target: 'examine goblin'.");
+					println!("Please write a correct target: eg: 'examine goblin'.");
+				}
+				"status" => {
+					break Command::Status();
+				}
+				"help" => {
+					println!("For play you have this commands: \n
+	attack: Attack to enemies\n
+		Usage=> attack name_of_enemy\n
+	examine\n
+	status: Show the actual game status\n"								
+					);
+					
 				}
                 "debug" => {
                     if DEBUG_MODE_ENABLED {

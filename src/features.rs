@@ -223,6 +223,9 @@ fn player_system(state: &mut GameState) {
 				pause();
 				break;
 			}
+			Command::Status() => {
+				println!("== There are {} enemies: {}", count.to_string(), creature_string)
+			}
 		}
 		println!("Enter another command:");
 	}
