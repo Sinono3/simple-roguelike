@@ -16,7 +16,8 @@ pub enum Command {
 	Attack(CreatureId),
 	Examine(CreatureId),
     Debug(DebugCommand),
-	Status()
+	Status(),
+	Error()
 }
 pub enum DebugCommand {
     Remove(CreatureId)
@@ -25,16 +26,19 @@ pub enum DebugCommand {
 impl Command {
 	pub fn get(state: &GameState) -> Command {
 		let stdin = io::stdin();
-		let mut buffer = String::new();
+		let mut input_string_buffer = String::new();
+		
 
 		loop {
-			stdin.read_line(&mut buffer).unwrap();
-
-			let parts: Vec<&str> = buffer.trim().split(' ').collect();
+			
+			stdin.read_line(&mut input_string_buffer).unwrap();
+			
+			
+			let parts: Vec<&str> = input_string_buffer.trim().split(' ').collect();
 
             // The repetition of parts.len() > 1 is acknowledged but is necessary due to one-worded
             // commands, which will be implemented in later versions of the engine/game.
-
+		
 			match parts[0] {
 				"attack" => {
 					if parts.len() > 1 {
@@ -85,10 +89,11 @@ impl Command {
                 }
 				_ => {
 					println!("'{}' is not a correct command.", parts[0]);
+					break Command::Error();
 				}
 			}
 
-			buffer.clear();
+			input_string_buffer.clear();
 		}
 	}
 }

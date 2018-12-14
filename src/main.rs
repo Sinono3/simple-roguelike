@@ -25,6 +25,7 @@ fn main() {
 	println!("##########################################");
 
 	println!("\n ..... You are a warrior and you have defeat your enemies\n");
+	println!("Type help for view the command list");
 	state.creatures.add(goblin.clone());
 	state.creatures.add(goblin.clone());
 

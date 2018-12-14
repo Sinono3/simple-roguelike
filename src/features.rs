@@ -138,18 +138,18 @@ impl GameState {
 				target_name
 			};
 		let inflictor_str = if inflictor_id == PLAYER_INDEX {
-				"You hit".to_owned()
+				"===> You hit".to_owned()
 			} else {
 				format!("{} hit", name)
 			};
 		println!("{} {} for {} damage.", inflictor_str, target_str, damage.to_string());
 
 		if target_health > 0 && target_id != PLAYER_INDEX {
-			println!("{} now has {} hitpoints remaining.", target_str, target_health.to_string());
+			println!("*{} now has {} hitpoints remaining.", target_str, target_health.to_string());
 		} else {
 			self.die(target_id);
 		}
-		pause();
+		//pause(); //Prevent error in command when you attack more of one time
 	}
 	pub fn die(&mut self, dead_id: CreatureId) {
 		let creature = self.creatures.remove(dead_id);
@@ -208,8 +208,9 @@ fn player_system(state: &mut GameState) {
 		// 3- Process the input.
 		match chosen {
 			Command::Attack(target) => {
-				state.hit(PLAYER_INDEX, target);
-				break;
+				break state.hit(PLAYER_INDEX, target);
+				
+				
 			}
 			Command::Examine(target) => {
 				let creature = state.creatures.get(target)
@@ -225,6 +226,9 @@ fn player_system(state: &mut GameState) {
 			}
 			Command::Status() => {
 				println!("== There are {} enemies: {}", count.to_string(), creature_string)
+			}
+			Command::Error() => {
+
 			}
 		}
 		println!("Enter another command:");
