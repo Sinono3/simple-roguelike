@@ -1,9 +1,11 @@
+mod game_state;
 mod creatures;
 mod commands;
 mod features;
 
+use crate::features::Feature;
+use crate::game_state::GameState;
 use crate::creatures::*;
-use crate::features::*;
 
 fn main() {
 	let human_warrior = Creature {
@@ -26,8 +28,9 @@ fn main() {
 
 	println!("\n## You're the only human warrior left and must defeat all enemies!\n");
 	println!("Type 'help' to see the available commands.");
-	state.creatures.add(goblin.clone());
-	state.creatures.add(goblin.clone());
+
+	state.add_register(goblin.clone());
+	state.add_register(goblin.clone());
 
 	loop {
 		state.round();
