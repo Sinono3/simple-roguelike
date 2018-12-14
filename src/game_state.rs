@@ -36,10 +36,12 @@ impl GameState {
 			creature.features.remove(feature_index);
 		}
 	}
-	pub fn round(&mut self) {
-		// everything thinking V3 (sorta ECS with components as features)
+	pub fn round(&mut self) -> bool {
+		// systems.
 		player_system(self);
 		aggressive_system(self);
+
+		true // TODO: player_system can return this, if not then the game will close because of the player's will
 	}
 	// Hits a creature with the inflictor's name and damage.
 	pub fn hit(&mut self, inflictor_id: CreatureId, target_id: CreatureId) {
