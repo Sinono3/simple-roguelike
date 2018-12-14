@@ -2,10 +2,17 @@ mod creatures;
 mod commands;
 mod features;
 
+extern crate crossterm;
+
 use crate::creatures::*;
 use crate::features::*;
 
+use crossterm::terminal::*;
 fn main() {
+
+	let terminal = terminal();
+	terminal.clear(ClearType::All);
+
 	let human_warrior = Creature {
 		name: String::from("human_warrior"),
 		health: 20,
