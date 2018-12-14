@@ -1,13 +1,15 @@
+mod game_state;
 mod creatures;
 mod commands;
 mod features;
 
 extern crate crossterm;
-
-use crate::creatures::*;
-use crate::features::*;
-
 use crossterm::terminal::*;
+
+use crate::features::Feature;
+use crate::game_state::GameState;
+use crate::creatures::*;
+
 fn main() {
 
 	let terminal = terminal();
@@ -33,8 +35,9 @@ fn main() {
 
 	println!("\n## You're the only human warrior left and must defeat all enemies!\n");
 	println!("Type 'help' to see the available commands.");
-	state.creatures.add(goblin.clone());
-	state.creatures.add(goblin.clone());
+
+	state.add_register(goblin.clone());
+	state.add_register(goblin.clone());
 
 	while state.round() {
 		//playing

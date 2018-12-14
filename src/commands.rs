@@ -1,8 +1,8 @@
 use std::io;
 use std::io::prelude::*;
 
-use crate::features::GameState;
-use crate::creatures::*;
+use crate::game_state::{GameState, PLAYER_ID};
+use crate::creatures::CreatureId;
 
 pub fn pause() {
     // Read a single byte and discard
@@ -43,7 +43,11 @@ impl Command {
 				"attack" => {
 					if parts.len() > 1 {
 						if let Some(target) = state.creatures.find(parts[1]) {
-							break Command::Attack(target);
+                            if target != PLAYER_ID {
+                                break Command::Attack(target);
+                            } else {
+                                println!("Don't attack yourself!");
+                            }
 						}
 					}
 					println!("Please write a correct target: ex: 'attack goblin'.");
