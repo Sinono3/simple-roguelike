@@ -20,6 +20,9 @@ fn main() {
 	};
 	let mut state = GameState::new(human_warrior.clone());
 
+	println!("##########################################");
+	println!("########## Simple roguelike game #########");
+	println!("##########################################");
 	state.creatures.add(goblin.clone());
 	state.creatures.add(goblin.clone());
 
