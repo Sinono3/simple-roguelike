@@ -1,3 +1,5 @@
+use crossterm::style::{Color, style};
+
 use crate::creatures::*;
 use crate::features::{Feature, aggressive_system, player_system};
 
@@ -6,6 +8,22 @@ pub const PLAYER_ID: CreatureId = 0;
 pub struct GameState {
 	pub creatures: CreatureMap,
 	pub aggressive: Vec<CreatureId>
+}
+
+// just used for determining console output
+enum AttackDirection {
+	ToPlayer,
+	Neutral,
+	FromPlayer
+}
+impl AttackDirection {
+	fn to_color(&self) -> Color {
+		match self {
+			ToPlayer => Color::Red,
+			Neutral => Color::White,
+			FromPlayer => Color::Green
+		}
+	}
 }
 
 impl GameState {
@@ -64,21 +82,29 @@ impl GameState {
 			(target.name.clone(), target.health)
 		};
 		// english stuff
+		let mut direction = AttackDirection::Neutral;
+
+		let inflictor_str = if inflictor_id == PLAYER_ID {
+			direction = AttackDirection::FromPlayer;
+			"+ You hit".to_owned()
+		} else {
+			format!("{} hit", name)
+		};
 		let target_str = if target_id == PLAYER_ID {
+				direction = AttackDirection::ToPlayer;
 				"you".to_owned()
 			} else {
 				target_name
 			};
-		let inflictor_str = if inflictor_id == PLAYER_ID {
-				"++ You hit".to_owned()
-			} else {
-				format!("{} hit", name)
-			};
-		println!("{} {} for {} damage.", inflictor_str, target_str, damage.to_string());
+		let final_str = format!("{} {} for {} damage.", inflictor_str, target_str, damage.to_string());
+
+		println!("{}", style(final_str)
+					   .with(direction.to_color()));
 
 		if target_health > 0 {
 			if target_id != PLAYER_ID {
-				println!("> {} now has {} hitpoints remaining.", target_str, target_health.to_string());
+				let final_str = format!("> {} now has {} hitpoints remaining.", target_str, target_health.to_string());
+				println!("{}", style(final_str).with(Color::Green));
 			}
 		} else {
 			self.die(target_id);

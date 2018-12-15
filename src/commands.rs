@@ -1,5 +1,6 @@
 use std::io;
 use std::io::prelude::*;
+use crossterm::style::{Color, style};
 
 use crate::game_state::{GameState, PLAYER_ID};
 use crate::creatures::CreatureId;
@@ -46,11 +47,13 @@ impl Command {
                             if target != PLAYER_ID {
                                 break Command::Attack(target);
                             } else {
-                                println!("Don't attack yourself!");
+                                println!("{}", style("Don't attack yourself!")
+                                            .with(Color::DarkRed))
                             }
 						}
 					}
-					println!("Please write a correct target: ex: 'attack goblin'.");
+                    println!("{}", style("Please write a correct target: ex: 'attack goblin'.")
+                                   .with(Color::DarkRed))
 				}
 				"examine" => {
 					if parts.len() > 1 {
@@ -58,7 +61,8 @@ impl Command {
 							break Command::Examine(target);
 						}
 					}
-					println!("Please write a correct target: ex: 'examine goblin'.");
+                    println!("{}", style("Please write a correct target: ex: 'examine goblin'.")
+                                   .with(Color::DarkRed))
 				}
 				"status" => {
 					break Command::Status;
@@ -77,17 +81,21 @@ impl Command {
                 					    }
                                     }
                                 }
-                                _ => println!("'{}' is not a correct debug command.", parts[1])
+                                _ => println!("{}",
+                                              style(format!("'{}' is not a correct debug command.", parts[1]))
+                                              .with(Color::DarkRed))
                             }
         				}
-        				println!("Please write an existing debug command: 'debug remove goblin'.");
+                        println!("{}", style("Please write an existing debug command: 'debug remove goblin'.")
+                                       .with(Color::DarkRed))
                     } else {
-                        println!("Debug mode is disabled.");
+                        println!("{}", style("Debug mode is disabled.")
+                                   .with(Color::DarkRed))
                     }
                 }
-				_ => {
-					println!("'{}' is not a correct command.", parts[0]);
-				}
+                _ => println!("{}",
+                              style(format!("'{}' is not a correct command.", parts[0]))
+                              .with(Color::DarkRed))
 			}
 
 			input_string_buffer.clear();

@@ -1,3 +1,5 @@
+use crossterm::style::{Color, style};
+
 use crate::game_state::{GameState, PLAYER_ID};
 use crate::creatures::Creature;
 use crate::commands::*;
@@ -22,7 +24,8 @@ pub fn player_system(state: &mut GameState) {
 
 	// Player control consists of three phases:
 	// 1- Show the enviroment and conditions:
-	println!("== You have {} hitpoints remaining.", player_health);
+	println!("{}", style(format!("== You have {} hitpoints remaining.", player_health))
+				   .with(Color::Green));
 
 	let mut creature_string = String::new();
 
@@ -40,13 +43,14 @@ pub fn player_system(state: &mut GameState) {
 
 	if count == 0 {
 		println!("=============== You WIN! ==============");
-	}
-	else {
-			println!("== There are {} enemies remaining: {}", count.to_string(), creature_string);
+	} else {
+		let stylized = style(format!("== There are {} enemies: {}", count.to_string(), creature_string)).with(Color::Red);
+		println!("{}", stylized);
 	}
 
 	// 2- Ask for player input
-	println!("Enter a command:");
+	println!("{}", style("Enter a command:")
+				   .with(Color::DarkGreen));
 	loop {
 		let chosen = Command::get(state);
 
@@ -58,12 +62,15 @@ pub fn player_system(state: &mut GameState) {
 			Command::Examine(target) => {
 				let creature = state.creatures.get(target)
 											  .expect("Game logic error: if the player is choosing this creature then it must exist.");
-				println!("{} has {} hitpoints remaining and does {} damage.", creature.name, creature.health, creature.damage);
-				pause();
+				let stylized = style(format!("{} has {} hitpoints remaining and does {} damage.",
+				creature.name, creature.health, creature.damage)).with(Color::Red);
+				println!("{}", stylized);
 			}
 			Command::Status => {
-				println!("== You have {} hitpoints remaining.", player_health);
-				println!("== There are {} enemies remaining: {}", count.to_string(), creature_string)
+				println!("{}", style(format!("== You have {} hitpoints remaining.", player_health))
+						   			.with(Color::Green));
+				let stylized = style(format!("== There are {} enemies: {}", count.to_string(), creature_string)).with(Color::Red);
+				println!("{}", stylized);
 			}
 			Command::Help => {
 				println!("The available commands are:
@@ -77,6 +84,7 @@ status: Show your character's status and remaining enemies."
 				println!("Creature '{}' with the id {} has been removed from the game.", creature.name, target);
 			}
 		}
-		println!("Enter another command:");
+		println!("{}", style("Enter another command:")
+					   .with(Color::DarkGreen));
 	}
 }

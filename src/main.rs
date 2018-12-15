@@ -5,6 +5,7 @@ mod features;
 
 extern crate crossterm;
 use crossterm::terminal::*;
+use crossterm::style::{Color, style};
 
 use crate::features::Feature;
 use crate::game_state::GameState;
@@ -29,12 +30,16 @@ fn main() {
 	};
 	let mut state = GameState::new(human_warrior.clone());
 
-	println!("##########################################");
-	println!("######### Simple Rusty Roguelike #########");
-	println!("##########################################");
+	let line = style("##########################################").with(Color::DarkYellow);
+	println!("{}", line);
+	println!("{}", style("######### Simple Rusty Roguelike #########").with(Color::DarkYellow));
+	println!("{}", line);
 
-	println!("\n## You're the only human warrior left and must defeat all enemies!\n");
-	println!("Type 'help' to see the available commands.");
+	println!("{}", style("\n## You're the only human warrior left and must defeat all enemies!\n")
+				   .with(Color::Green));
+
+	println!("{}", style("Type 'help' to see the available commands.")
+				   .with(Color::DarkGreen));
 
 	state.add_register(goblin.clone());
 	state.add_register(goblin.clone());
