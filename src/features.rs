@@ -24,21 +24,20 @@ pub fn player_system(state: &mut GameState) {
 	let player_health = state.creatures.get(PLAYER_ID)
 									   .expect("Game logic error: the player is dead and the game is still running.")
 									   .health;
-	
-	//Display health bar in the right corner
-	let _cursor = cursor();
-	_cursor.save_position();	
-	let _terminal = terminal();
-	let (width, height) = _terminal.terminal_size();	
-	_cursor.goto(width-10, 0);	//always in the right corner (width - char count)
-	println!("{}", style(format!("Health: {}", player_health))
-				   .with(Color::Red));		
-	_cursor.reset_position(); //back to the original position for writen the other text
-	
 
 	// Player control consists of three phases:
-	// 1- Show the enviroment and conditions:	
-	
+	// 1- Show the enviroment and conditions:
+	//Display health bar in the right corner
+	let _cursor = cursor();
+	_cursor.save_position();
+	let _terminal = terminal();
+	let (width, _) = _terminal.terminal_size();
+	_cursor.goto(width-10, 0);	//always in the right corner (width - char count)
+	println!("{}", style(format!("Health: {}", player_health))
+					// show in red if critical (less than 8)
+				   .with( if player_health < 8 { Color::Red } else { Color::Green }));
+	_cursor.reset_position(); //back to the original position for writen the other text
+
 
 	let mut creature_string = String::new();
 
@@ -65,7 +64,7 @@ pub fn player_system(state: &mut GameState) {
 	println!("{}", style("Enter a command:")
 				   .with(Color::DarkGreen));
 	loop {
-		
+
 		let chosen = Command::get(state);
 
 		// 3- Process the input.
