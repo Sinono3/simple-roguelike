@@ -10,7 +10,7 @@ use crossterm::terminal::*;
 use crate::features::Feature;
 use crate::game_state::GameState;
 use crate::creatures::*;
-
+use crate::weapons::*;
 fn main() {
 
 	let terminal = terminal();
@@ -40,7 +40,26 @@ fn main() {
 	state.add_register(goblin.clone());
 	state.add_register(goblin.clone());
 
+	create_weapons(&mut state);
 	while state.round() {
 		//playing
 	}
+}
+fn create_weapons(_state : &mut GameState){
+	let big_sword = Weapon {
+		name : String::from("big_sword"),
+		demage : 6
+	};
+	let stick = Weapon {
+		name : String::from("stick"),
+		demage : 2
+	};
+	let snife = Weapon {
+		name : String::from("snife"),
+		demage : 4
+	};
+
+	_state._weapon_manager.add_weapon(big_sword.clone());
+	_state._weapon_manager.add_weapon(stick.clone());
+	_state._weapon_manager.add_weapon(snife.clone());
 }

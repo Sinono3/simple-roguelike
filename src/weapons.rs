@@ -6,7 +6,7 @@ pub struct Weapon {
 }
 
 pub struct WeaponManager {
-    count : u32,
+    count : usize,
     availible_weapons : Vec<Weapon>
 }
 
@@ -18,7 +18,8 @@ impl WeaponManager {
         }
     }
 
-    pub fn add_weapon(&mut self, mut new_weapon : Weapon){
-
+    pub fn add_weapon(&mut self, new_weapon : Weapon){
+        self.availible_weapons.push(new_weapon);
+        self.count = self.availible_weapons.len();
     }
 }
