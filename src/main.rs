@@ -2,6 +2,7 @@ mod game_state;
 mod creatures;
 mod commands;
 mod features;
+mod weapons;
 
 extern crate crossterm;
 use crossterm::terminal::*;

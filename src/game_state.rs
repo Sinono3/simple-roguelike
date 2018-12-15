@@ -3,16 +3,19 @@ use crate::features::{Feature, aggressive_system, player_system};
 
 pub const PLAYER_ID: CreatureId = 0;
 
+use crate::weapons::*;
 pub struct GameState {
 	pub creatures: CreatureMap,
-	pub aggressive: Vec<CreatureId>
+	pub aggressive: Vec<CreatureId>,
+	pub _weapon_manager : WeaponManager
 }
 
 impl GameState {
 	pub fn new(player: Creature) -> GameState {
 		let mut state = GameState {
 			creatures: CreatureMap::new(),
-			aggressive: Vec::new()
+			aggressive: Vec::new(),
+			_weapon_manager: WeaponManager::new()
 		};
 		state.creatures.add(player);
 		state
