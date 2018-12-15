@@ -19,9 +19,9 @@ enum AttackDirection {
 impl AttackDirection {
 	fn to_color(&self) -> Color {
 		match self {
-			ToPlayer => Color::Red,
-			Neutral => Color::White,
-			FromPlayer => Color::Green
+			AttackDirection::ToPlayer => Color::Red,
+			AttackDirection::Neutral => Color::White,
+			AttackDirection::FromPlayer => Color::Green
 		}
 	}
 }
