@@ -3,11 +3,18 @@ mod creatures;
 mod commands;
 mod features;
 
+extern crate crossterm;
+use crossterm::terminal::*;
+
 use crate::features::Feature;
 use crate::game_state::GameState;
 use crate::creatures::*;
 
 fn main() {
+
+	let terminal = terminal();
+	terminal.clear(ClearType::All);
+
 	let human_warrior = Creature {
 		name: String::from("human_warrior"),
 		health: 20,
@@ -32,7 +39,7 @@ fn main() {
 	state.add_register(goblin.clone());
 	state.add_register(goblin.clone());
 
-	loop {
-		state.round();
+	while state.round() {
+		//playing
 	}
 }
