@@ -4,6 +4,9 @@ use crate::game_state::{GameState, PLAYER_ID};
 use crate::creatures::Creature;
 use crate::commands::*;
 
+use crate::crossterm::cursor::*;
+use crate::crossterm::terminal::*;
+
 #[derive(Clone, PartialEq, Eq)]
 pub enum Feature {
 	Aggression
@@ -21,11 +24,21 @@ pub fn player_system(state: &mut GameState) {
 	let player_health = state.creatures.get(PLAYER_ID)
 									   .expect("Game logic error: the player is dead and the game is still running.")
 									   .health;
+	
+	//Display health bar in the right corner
+	let _cursor = cursor();
+	_cursor.save_position();	
+	let _terminal = terminal();
+	let (width, height) = _terminal.terminal_size();	
+	_cursor.goto(width-10, 0);	//always in the right corner (width - char count)
+	println!("{}", style(format!("Health: {}", player_health))
+				   .with(Color::Red));		
+	_cursor.reset_position(); //back to the original position for writen the other text
+	
 
 	// Player control consists of three phases:
-	// 1- Show the enviroment and conditions:
-	println!("{}", style(format!("== You have {} hitpoints remaining.", player_health))
-				   .with(Color::Green));
+	// 1- Show the enviroment and conditions:	
+	
 
 	let mut creature_string = String::new();
 
@@ -52,6 +65,7 @@ pub fn player_system(state: &mut GameState) {
 	println!("{}", style("Enter a command:")
 				   .with(Color::DarkGreen));
 	loop {
+		
 		let chosen = Command::get(state);
 
 		// 3- Process the input.
@@ -84,6 +98,7 @@ status: Show your character's status and remaining enemies."
 				println!("Creature '{}' with the id {} has been removed from the game.", creature.name, target);
 			}
 		}
+		//_cursor.goto(0, 30); TODO
 		println!("{}", style("Enter another command:")
 					   .with(Color::DarkGreen));
 	}
