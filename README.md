@@ -1,3 +1,5 @@
+[Spanish-speaking Discord server](https://discord.gg/BuFhC4e)
+
 Currently in EARLY-EARLY-EARLY stages. So no maps, graphics or complex AI yet.
 
 ## Current goals with this game
