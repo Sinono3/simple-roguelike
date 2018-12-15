@@ -21,7 +21,8 @@ pub enum Command {
     Debug(DebugCommand)
 }
 pub enum DebugCommand {
-    Remove(CreatureId)
+    Remove(CreatureId),
+    OpenFile()
 }
 
 impl Command {
@@ -80,6 +81,9 @@ impl Command {
                         				    break Command::Debug(DebugCommand::Remove(target));
                 					    }
                                     }
+                                }
+                                "open_file" => {
+                                    break Command::Debug(DebugCommand::OpenFile());
                                 }
                                 _ => println!("{}",
                                               style(format!("'{}' is not a correct debug command.", parts[1]))

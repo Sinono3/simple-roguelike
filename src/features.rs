@@ -1,5 +1,8 @@
 use crossterm::style::{Color, style};
 
+use std::fs::File;
+use std::io::Read;
+
 use crate::game_state::{GameState, PLAYER_ID};
 use crate::creatures::Creature;
 use crate::commands::*;
@@ -82,6 +85,12 @@ status: Show your character's status and remaining enemies."
 			Command::Debug(DebugCommand::Remove(target)) => {
 				let creature: Creature = state.creatures.remove(target);
 				println!("Creature '{}' with the id {} has been removed from the game.", creature.name, target);
+			}
+			Command::Debug(DebugCommand::OpenFile()) => {
+				let mut file = File::open("./src/goblin3.json").unwrap();
+				let mut data = String::new();
+				file.read_to_string(&mut data).unwrap();
+				println!("{}",data);
 			}
 		}
 		println!("{}", style("Enter another command:")
