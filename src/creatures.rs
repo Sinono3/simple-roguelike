@@ -149,6 +149,7 @@ impl CreatureMap {
 	}
 	pub fn remove(&mut self, id: CreatureId) {
 		self.set_none(id);
+		self.alloc.deallocate(id);
 	}
 	pub fn find_by_name(&self, name: &str) -> Option<CreatureId> {
 		let vec = self.components.get_mut::<Vec<Option<NameComponent>>>().expect(ANYMAP_ERROR);
@@ -174,6 +175,10 @@ impl CreatureMap {
 		(0..self.len)
 				.filter(|id| !self.alloc.is_free(*id))
 				.count()
+	}
+	// BE CAREFUL. VERY UNSTABLE. NEEDS GENERATION_INDEXES ASAP.
+	pub fn is_dead(&self, id: CreatureId) -> bool {
+		self.alloc.free.contains(&id)
 	}
 	/* Removed until needed again.
 	#[allow(dead_code)]
