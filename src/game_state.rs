@@ -1,13 +1,13 @@
 use crossterm::style::{Color, style};
 
+use crate::components::*;
 use crate::creatures::*;
-use crate::features::{Feature, aggressive_system, player_system};
+use crate::commands::{Command, DebugCommand};
 
 pub const PLAYER_ID: CreatureId = 0;
 
 pub struct GameState {
-	pub creatures: CreatureMap,
-	pub aggressive: Vec<CreatureId>
+	pub creatures: CreatureMap
 }
 
 // just used for determining console output
@@ -27,59 +27,44 @@ impl AttackDirection {
 }
 
 impl GameState {
-	pub fn new(player: Creature) -> GameState {
+	pub fn new(player: CreatureData) -> GameState {
 		let mut state = GameState {
-			creatures: CreatureMap::new(),
-			aggressive: Vec::new()
+			creatures: CreatureMap::new()
 		};
 		state.creatures.add(player);
 		state
 	}
-	pub fn add_register(&mut self, creature: Creature) -> CreatureId {
-		let id = self.creatures.len();
-
-		for feature in &creature.features {
-			match feature {
-				Feature::Aggression => self.aggressive.push(id)
-			}
-		}
-
-		self.creatures.add(creature)
-	}
-	#[allow(dead_code)]
-	pub fn remove_feature(&mut self, id: CreatureId, feature: Feature) {
-		let creature = self.creatures.get_mut(id)
-									 .expect("Game logic error: can't remove if feature if creature doesn't exist.");
-		if let Some(feature_index) = creature.features.iter().position(|x| *x == feature) {
-			creature.features.remove(feature_index);
-		}
-	}
 	pub fn round(&mut self) -> bool {
 		// systems.
 		player_system(self);
-		aggressive_system(self);
+		crate::components::systems::aggression(self);
 
 		true // TODO: player_system can return this, if not then the game will close because of the player's will
 	}
 	// Hits a creature with the inflictor's name and damage.
 	pub fn hit(&mut self, inflictor_id: CreatureId, target_id: CreatureId) {
-
 		assert!(inflictor_id != target_id, "Game logic error: a creature can't attack itself.");
+
+		let existance_error = "Game logic error: the gotten component doesn't exist.";
 
 		// get name and damage from inflictor
 		let (name, damage) = {
 			// Can use unwrap because the target the inflictor is hitting must exist
-			let inflictor = self.creatures.get(inflictor_id)
-										  .expect("Game logic error: the inflictor must exist, in order to call this function.");
-			(inflictor.name.clone(), inflictor.damage)
+			(self.creatures.get::<NameComponent>(inflictor_id)
+						   .expect("Game logic error: Inflictor doesn't have a name.").0.clone(),
+			 self.creatures.get::<AttackComponent>(inflictor_id)
+ 						   .expect(format!("Game logic error: Inflictor can't attack. {}", inflictor_id).as_str()).damage)
 		};
 		// get name and apply damage to target
 		let (target_name, target_health) = {
 			// Can unwrap because the target must be alive.
-			let target = self.creatures.get_mut(target_id)
-									   .expect("Game logic error: the target must exist, in order to be hit.");
-			target.health -= damage;
-			(target.name.clone(), target.health)
+			let (name, health) =
+				(self.creatures.get::<NameComponent>(target_id)
+							   .expect("Game logic error: Victim doesn't have a name").0.clone(),
+				 self.creatures.get_mut::<HealthComponent>(target_id)
+				 			   .expect("Game logic error: Victim is immortal."));
+			health.damage(damage);
+			(name, health.0)
 		};
 		// english stuff
 		let mut direction = AttackDirection::Neutral;
@@ -111,23 +96,104 @@ impl GameState {
 		}
 	}
 	pub fn die(&mut self, dead_id: CreatureId) {
-		let creature = self.creatures.remove(dead_id);
-
-		let error_str = "Game internal error: creature with feature is not on its respective list.";
-		for feature in creature.features {
-			match feature {
-				Feature::Aggression => self.aggressive.remove(self.aggressive.iter()
-																			 .position(|x| *x == dead_id)
-																			 .expect(error_str))
-			};
-		}
+		let name = self.creatures.get::<NameComponent>(dead_id)
+									  .expect("Game internal error: Creature doesn't have a name!").0.clone();
+		self.creatures.remove(dead_id);
 
 		let target_str = if dead_id == PLAYER_ID {
 						 	 "You died!".to_owned()
 						 } else {
-						 	 format!("{} has died!", creature.name)
+						 	 format!("{} has died!", name)
 						 };
 
 		println!("{}", target_str);
+	}
+}
+
+pub fn player_system(state: &mut GameState) {
+	// Can unwrap here because the player should exist.
+	// If not then why should the game even be running.
+	let player_health = state.creatures.get::<HealthComponent>(PLAYER_ID)
+									   .expect("Game logic error: the player is dead and the game is still running.")
+									   .0;
+
+	// Player control consists of three phases:
+	// 1- Show the enviroment and conditions:
+	println!("{}", style(format!("== You have {} hitpoints remaining.", player_health))
+				   .with(Color::Green));
+
+	let mut creature_string = String::new();
+
+	let mut count = 0usize;
+
+	/* Left for debug purposes later. Might be converted into command.
+	for (id, name) in state.creatures.all::<AttackComponent>().iter().enumerate() {
+		if let Some(str) = name {
+			println!("{}: yes", id);
+		} else {
+			println!("{}: None", id);
+		}
+	}*/
+
+	// Can unwrap because alive() ASSURES that the returned creatures are alive.
+	for name in state.creatures.alive().iter()
+										   .filter(|id| **id != PLAYER_ID)
+										   .map(|id| state.creatures.get::<NameComponent>(*id)
+										   .expect(
+											   format!("Game internal error: creature {} should exist", id).as_str()
+										   ).0.clone()) {
+		creature_string.push_str(
+			format!("{}; ", name).as_str()
+		);
+		count += 1;
+	}
+
+	if count == 0 {
+		println!("=============== You WIN! ==============");
+	} else {
+		let stylized = style(format!("== There are {} enemies: {}", count.to_string(), creature_string)).with(Color::Red);
+		println!("{}", stylized);
+	}
+
+	// 2- Ask for player input
+	println!("{}", style("Enter a command:")
+				   .with(Color::DarkGreen));
+	loop {
+		let chosen = Command::get(state);
+
+		// 3- Process the input.
+		match chosen {
+			Command::Attack(target) => {
+				break state.hit(PLAYER_ID, target);
+			}
+			Command::Examine(target) => {
+				/* Removed until multiple component borrows at the same time in CreatureMap.
+				let creature = state.creatures.get(target)
+											  .expect("Game logic error: if the player is choosing this creature then it must exist.");
+				let stylized = style(format!("{} has {} hitpoints remaining and does {} damage.",
+				creature.name, creature.health, creature.damage)).with(Color::Red);
+				println!("{}", stylized);*/
+			}
+			Command::Status => {
+				println!("{}", style(format!("== You have {} hitpoints remaining.", player_health))
+						   			.with(Color::Green));
+				let stylized = style(format!("== There are {} enemies: {}", count.to_string(), creature_string)).with(Color::Red);
+				println!("{}", stylized);
+			}
+			Command::Help => {
+				println!("The available commands are:
+attack: Hit enemies. Usage: 'attack enemy_name'
+examine: Shows the status of a creature. Usage: 'examine enemy_name'
+status: Show your character's status and remaining enemies."
+				);
+			}
+			Command::Debug(DebugCommand::Remove(target)) => {
+				// Removed until multiple component borrows at the same time in CreatureMap.
+				//let creature: Creature = state.creatures.remove(target);
+				//println!("Creature '{}' with the id {} has been removed from the game.", creature.name, target);
+			}
+		}
+		println!("{}", style("Enter another command:")
+					   .with(Color::DarkGreen));
 	}
 }

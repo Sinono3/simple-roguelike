@@ -29,12 +29,8 @@ impl Command {
 		let stdin = io::stdin();
 		let mut input_string_buffer = String::new();
 
-
 		loop {
-
 			stdin.read_line(&mut input_string_buffer).unwrap();
-
-
 			let parts: Vec<&str> = input_string_buffer.trim().split(' ').collect();
 
             // The repetition of parts.len() > 1 is acknowledged but is necessary due to one-worded
@@ -43,7 +39,7 @@ impl Command {
 			match parts[0] {
 				"attack" => {
 					if parts.len() > 1 {
-						if let Some(target) = state.creatures.find(parts[1]) {
+						if let Some(target) = state.creatures.find_by_name(parts[1]) {
                             if target != PLAYER_ID {
                                 break Command::Attack(target);
                             } else {
@@ -57,7 +53,7 @@ impl Command {
 				}
 				"examine" => {
 					if parts.len() > 1 {
-						if let Some(target) = state.creatures.find(parts[1]) {
+						if let Some(target) = state.creatures.find_by_name(parts[1]) {
 							break Command::Examine(target);
 						}
 					}
@@ -76,7 +72,7 @@ impl Command {
         					match parts[1] {
                                 "remove" => {
                                     if parts.len() > 2 {
-                                        if let Some(target) = state.creatures.find(parts[2]) {
+                                        if let Some(target) = state.creatures.find_by_name(parts[2]) {
                         				    break Command::Debug(DebugCommand::Remove(target));
                 					    }
                                     }
