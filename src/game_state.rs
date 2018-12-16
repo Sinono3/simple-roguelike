@@ -1,13 +1,12 @@
+use crate::components::*;
 use crossterm::style::{Color, style};
 
 use crate::creatures::*;
-use crate::components::{aggressive_system, player_system};
 
 pub const PLAYER_ID: CreatureId = 0;
 
 pub struct GameState {
-	pub creatures: CreatureMap,
-	pub aggressive: Vec<CreatureId>
+	pub creatures: CreatureMap
 }
 
 // just used for determining console output
@@ -27,59 +26,40 @@ impl AttackDirection {
 }
 
 impl GameState {
-	pub fn new(player: Creature) -> GameState {
+	pub fn new(player: CreatureData) -> GameState {
 		let mut state = GameState {
-			creatures: CreatureMap::new(),
-			aggressive: Vec::new()
+			creatures: CreatureMap::new()
 		};
 		state.creatures.add(player);
 		state
 	}
-	pub fn add_register(&mut self, creature: Creature) -> CreatureId {
-		let id = self.creatures.len();
-
-		for feature in &creature.features {
-			match feature {
-				Feature::Aggression => self.aggressive.push(id)
-			}
-		}
-
-		self.creatures.add(creature)
-	}
-	#[allow(dead_code)]
-	pub fn remove_feature(&mut self, id: CreatureId, feature: Feature) {
-		let creature = self.creatures.get_mut(id)
-									 .expect("Game logic error: can't remove if feature if creature doesn't exist.");
-		if let Some(feature_index) = creature.features.iter().position(|x| *x == feature) {
-			creature.features.remove(feature_index);
-		}
-	}
 	pub fn round(&mut self) -> bool {
 		// systems.
 		player_system(self);
-		aggressive_system(self);
+		crate::components::systems::aggression(self);
 
 		true // TODO: player_system can return this, if not then the game will close because of the player's will
 	}
 	// Hits a creature with the inflictor's name and damage.
 	pub fn hit(&mut self, inflictor_id: CreatureId, target_id: CreatureId) {
-
 		assert!(inflictor_id != target_id, "Game logic error: a creature can't attack itself.");
+
+		let existance_error = "Game logic error: the gotten creature doesn't exist.";
 
 		// get name and damage from inflictor
 		let (name, damage) = {
 			// Can use unwrap because the target the inflictor is hitting must exist
-			let inflictor = self.creatures.get(inflictor_id)
-										  .expect("Game logic error: the inflictor must exist, in order to call this function.");
-			(inflictor.name.clone(), inflictor.damage)
+			(self.creatures.get_mut::<NameComponent>(inflictor_id).expect(existance_error).0.clone(),
+			 self.creatures.get::<AttackComponent>(inflictor_id).expect(existance_error).damage)
 		};
 		// get name and apply damage to target
 		let (target_name, target_health) = {
 			// Can unwrap because the target must be alive.
-			let target = self.creatures.get_mut(target_id)
-									   .expect("Game logic error: the target must exist, in order to be hit.");
-			target.health -= damage;
-			(target.name.clone(), target.health)
+			let (name, health) =
+				(self.creatures.get_mut::<NameComponent>(target_id).expect(existance_error).0.clone(),
+				 self.creatures.get::<HealthComponent>(target_id).expect(existance_error));
+			health.damage(damage);
+			(name, health.0)
 		};
 		// english stuff
 		let mut direction = AttackDirection::Neutral;
@@ -111,21 +91,14 @@ impl GameState {
 		}
 	}
 	pub fn die(&mut self, dead_id: CreatureId) {
-		let creature = self.creatures.remove(dead_id);
-
-		let error_str = "Game internal error: creature with feature is not on its respective list.";
-		for feature in creature.features {
-			match feature {
-				Feature::Aggression => self.aggressive.remove(self.aggressive.iter()
-																			 .position(|x| *x == dead_id)
-																			 .expect(error_str))
-			};
-		}
+		let name = self.creatures.get::<NameComponent>(dead_id)
+									  .expect("Game internal error: Creature doesn't have a name!").0;
+		self.creatures.remove(dead_id);
 
 		let target_str = if dead_id == PLAYER_ID {
 						 	 "You died!".to_owned()
 						 } else {
-						 	 format!("{} has died!", creature.name)
+						 	 format!("{} has died!", name)
 						 };
 
 		println!("{}", target_str);

@@ -8,8 +8,11 @@ impl From<AggressionComponent> for Component {
 	fn from(component: AggressionComponent) -> Self { Component::Aggression }
 }
 
-pub fn aggression_system(state: &mut GameState) {
-	for i in 0..state.aggressive.len() {
-		state.hit(state.aggressive[i], PLAYER_ID);
+pub fn aggression(state: &mut GameState) {
+	let components = state.creatures.all::<AggressionComponent>().iter().enumerate();
+	for (id, component) in components {
+		if let Some(_) = component {
+			state.hit(id, PLAYER_ID);
+		}
 	}
 }

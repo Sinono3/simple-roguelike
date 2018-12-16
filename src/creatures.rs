@@ -1,5 +1,4 @@
 #[macro_use]
-use std::any::TypeId;
 use std::collections::HashMap;
 use anymap::any::Any;
 use anymap::AnyMap;
@@ -143,9 +142,17 @@ impl CreatureMap {
 		let vec = self.components.get::<Vec<Option<T>>>().expect(ANYMAP_ERROR);
 		vec.get(id).expect("Game logic error: Creature doesn't exist.").as_ref()
 	}
-	pub fn get_mut<T: 'static>(&self, id: CreatureId) -> Option<&mut T> {
+	pub fn get_mut<T: 'static>(&mut self, id: CreatureId) -> Option<&mut T> {
 		let vec = self.components.get_mut::<Vec<Option<T>>>().expect(ANYMAP_ERROR);
 		vec.get_mut(id).expect("Game logic error: Creature doesn't exist.").as_mut()
+	}
+	pub fn all<T: 'static>(&self) -> &Vec<Option<T>> {
+		let vec = self.components.get::<Vec<Option<T>>>().expect(ANYMAP_ERROR);
+		vec.as_ref()
+	}
+	pub fn all_mut<T: 'static>(&mut self) -> &mut Vec<Option<T>> {
+		let vec = self.components.get_mut::<Vec<Option<T>>>().expect(ANYMAP_ERROR);
+		vec.as_mut()
 	}
 	pub fn remove(&mut self, id: CreatureId) {
 		self.set_none(id);

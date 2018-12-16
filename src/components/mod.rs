@@ -4,11 +4,12 @@ mod name;
 mod health;
 mod attack;
 mod aggression;
+pub mod systems;
 
 pub use self::health::HealthComponent;
 pub use self::name::NameComponent;
 pub use self::attack::AttackComponent;
-pub use self::aggression::{AggressionComponent, aggression_system};
+pub use self::aggression::{AggressionComponent};
 
 pub const NAME_COMPONENT_ID: TypeId = TypeId::of::<NameComponent>();
 pub const HEALTH_COMPONENT_ID: TypeId = TypeId::of::<HealthComponent>();

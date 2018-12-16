@@ -40,8 +40,8 @@ fn main() {
 	println!("{}", style("Type 'help' to see the available commands.")
 				   .with(Color::DarkGreen));
 
-	state.add_register(goblin);
-	state.add_register(goblin2);
+	state.creatures.add(goblin);
+	state.creatures.add(goblin2);
 
 	while state.round() {
 		//playing
