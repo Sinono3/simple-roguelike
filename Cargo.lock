@@ -1,4 +1,9 @@
 [[package]]
+name = "anymap"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "crossterm"
 version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -17,6 +22,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "simple-roguelike"
 version = "0.1.0"
 dependencies = [
+ "anymap 0.12.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "crossterm 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -48,6 +54,7 @@ version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [metadata]
+"checksum anymap 0.12.1 (registry+https://github.com/rust-lang/crates.io-index)" = "33954243bd79057c2de7338850b85983a44588021f8a5fee574a8888c6de4344"
 "checksum crossterm 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)" = "aa9707464a4afce45cbe9cb9274bde583dbbc8011bba1b296324d2a9297809ae"
 "checksum libc 0.2.44 (registry+https://github.com/rust-lang/crates.io-index)" = "10923947f84a519a45c8fefb7dd1b3e8c08747993381adee176d7a82b4195311"
 "checksum termios 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "72b620c5ea021d75a735c943269bb07d30c9b77d6ac6b236bc8b5c496ef05625"

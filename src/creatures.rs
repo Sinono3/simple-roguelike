@@ -1,67 +1,136 @@
+#[macro_use]
+use std::any::TypeId;
 use std::collections::HashMap;
+use anymap::any::Any;
+use anymap::AnyMap;
+
+use crate::components::*;
 
 pub type CreatureId = usize;
 
-use crate::features::Feature;
-
-#[derive(Clone)]
-pub struct Creature {
-	pub name: String,
-	pub health: i32,
-	pub damage: i32,
-	pub features: Vec<Feature>
+struct CreatureAllocator {
+	free: Vec<CreatureId>
+}
+impl CreatureAllocator {
+	fn new() -> CreatureAllocator {
+		CreatureAllocator {
+			free: Vec::new()
+		}
+	}
+	fn allocate(&mut self) -> Option<CreatureId> {
+		self.free.pop()
+	}
+	fn deallocate(&mut self, id: CreatureId) {
+		self.free.push(id);
+	}
+}
+pub struct CreatureData {
+	contents: Box<AnyMap>,
+}
+impl CreatureData {
+	pub fn new(name: &str, health: i32) -> CreatureData {
+		let data = CreatureData {
+			contents: Box::new(AnyMap::new())
+		};
+		data.contents.insert(NameComponent(String::from(name)));
+		data.contents.insert(HealthComponent(health));
+		data
+	}
+	pub fn with(self, component: Box<Any>) -> Self {
+		self.contents.insert(component);
+		self
+	}
+	pub fn contains<T: 'static>(&self) -> bool {
+		self.contents.contains::<T>()
+	}
+	pub fn get<T: 'static>(&self) -> Option<&T> {
+		self.contents.get::<T>()
+	}
+	fn remove<T: 'static>(&self) -> Option<T> {
+		self.contents.remove::<T>()
+	}
+	/*pub fn clone(&self) -> CreatureData {
+		let deref = *self.contents.deref();
+		CreatureData {
+			contents: Box::new(deref.clone())
+		}
+	}*/
 }
 
 pub struct CreatureMap {
-	vec: Vec<Option<Creature>>,
-	names: HashMap<String, i32>
+	alloc: CreatureAllocator,
+	name_components: Vec<Option<NameComponent>>,
+	health_components: Vec<Option<HealthComponent>>,
+	attack_components: Vec<Option<AttackComponent>>,
+	aggression_components: Vec<Option<AggressionComponent>>,
+	name_count: HashMap<String, i32>,
 }
 
 impl CreatureMap {
 	pub fn new() -> CreatureMap {
 		CreatureMap {
-			vec: Vec::new(),
-			names: HashMap::new()
+			alloc: CreatureAllocator::new(),
+			name_components: Vec::new(),
+			health_components: Vec::new(),
+			attack_components: Vec::new(),
+			aggression_components: Vec::new(),
+			name_count: HashMap::new(),
 		}
 	}
-	pub fn add(&mut self, mut creature: Creature) -> CreatureId {
-		// prevent same name.
-		if let Some(count) = self.names.get_mut(&creature.name) {
-			*count += 1;
-			creature.name.push_str(&count.to_string());
+	pub fn add(&mut self, mut creature: CreatureData) -> CreatureId {
+		// get id and decide if allocating or not.
+		let id = if let Some(id) = self.alloc.allocate() {
+			self.name_components[id] = None;
+			self.health_components[id] = None;
+			self.attack_components[id] = None;
+			self.aggression_components[id] = None;
+			id
 		} else {
-			self.names.insert(creature.name.clone(), 1);
-		}
-
-		let id = if let Some(x) = self.vec.iter().position(|x| x.is_none()) {
-			self.vec[x] = Some(creature);
-			x
-		} else {
-			self.vec.push(Some(creature));
-			self.vec.len() - 1
+			self.name_components.push(None);
+			self.health_components.push(None);
+			self.attack_components.push(None);
+			self.aggression_components.push(None);
+			self.len() - 1
 		};
-		/* TODO: Implement this on the GameState instead of here.
-		// put in respective featured list.
-		for feature in &creature.features {
-			match feature {
-				Feature::Aggression => self.vec.push(id),
-				Feature::Playable => ()
+
+		// prevent same name.
+		let new_name = if let Some(name) = creature.remove::<NameComponent>() {
+			if let Some(count) = self.name_count.get_mut(name.0.as_str()) {
+				*count += 1;
+				name.0.push_str(&count.to_string());
+			} else {
+				self.name_count.insert(name.0.clone(), 1);
 			}
-		}
-		*/
+			Some(name)
+		} else {
+			panic!("Creature with id {} has no name.", id);
+			None
+		};
+
+		// add components
+		self.name_components[id] = new_name;
+		self.health_components[id] = creature.remove::<HealthComponent>();
+		self.attack_components[id] = creature.remove::<AttackComponent>();
+		self.aggression_components[id] = creature.remove::<AggressionComponent>();
+
 		id
 	}
 	// TODO: be able to add more than 1 creature at once, and return a slice of creature ids.
-	pub fn get(&self, id: CreatureId) -> Option<&Creature> {
-		self.vec[id].as_ref()
+	pub fn get<T: 'static>(&self, id: CreatureId) -> Option<T> {
+		// TEMPORAL SOLUTION!!!!!
+		match TypeId::of::<T>() {
+			NAME_COMPONENT_ID => self.name_components.get(id),
+			HEALTH_COMPONENT_ID => self.health_components.get(id),
+			ATTACK_COMPONENT_ID => self.attack_components.get(id),
+			AGGRESSION_COMPONENT_ID => self.aggression_components.get(id)
+		}
 	}
-	pub fn get_mut(&mut self, id: CreatureId) -> Option<&mut Creature> {
+	pub fn get_mut(&mut self, id: CreatureId) -> Option<&mut T> {
 		self.vec[id].as_mut()
 	}
-	pub fn remove(&mut self, id: CreatureId) -> Creature {
+	pub fn remove(&mut self, id: CreatureId) {
 		let removed = self.vec.remove(id).expect("Game logic error: trying to remove unexisting creature.");
 		self.vec.insert(id, None);
-		removed
 	}
 	pub fn find(&self, name: &str) -> Option<CreatureId> {
 		self.vec.iter().position(|x| {
@@ -73,7 +142,7 @@ impl CreatureMap {
 		})
 	}
 	pub fn len(&self) -> usize {
-		self.vec.len()
+		self.name_components.len()
 	}
 	/*#[allow(dead_code)]
 	pub fn iter(&mut self) -> std::slice::IterMut<Option<Creature>> {

@@ -29,12 +29,8 @@ impl Command {
 		let stdin = io::stdin();
 		let mut input_string_buffer = String::new();
 
-
 		loop {
-
 			stdin.read_line(&mut input_string_buffer).unwrap();
-
-
 			let parts: Vec<&str> = input_string_buffer.trim().split(' ').collect();
 
             // The repetition of parts.len() > 1 is acknowledged but is necessary due to one-worded
