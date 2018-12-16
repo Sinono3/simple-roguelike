@@ -19,13 +19,11 @@ fn main() {
 	terminal.clear(ClearType::All);
 
 	let human_warrior = CreatureData::new("human_warrior", 20)
-									 .with(Box::new(AttackComponent { damage: 4 }));
+		.with(AttackComponent { damage: 4 });
+	
 	let goblin = CreatureData::new("goblin", 12)
-							  .with(Box::new(AttackComponent { damage: 2 }))
-							  .with(Box::new(AggressionComponent));
-	let goblin2 = CreatureData::new("goblin", 12)
-							   .with(Box::new(AttackComponent { damage: 2 }))
-						  	   .with(Box::new(AggressionComponent));
+		.with(AttackComponent { damage: 2 })
+		.with(AggressionComponent);
 
 	let mut state = GameState::new(human_warrior);
 
@@ -40,8 +38,8 @@ fn main() {
 	println!("{}", style("Type 'help' to see the available commands.")
 				   .with(Color::DarkGreen));
 
+	state.creatures.add(goblin.clone());
 	state.creatures.add(goblin);
-	state.creatures.add(goblin2);
 
 	while state.round() {
 		//playing
