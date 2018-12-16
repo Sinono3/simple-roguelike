@@ -9,10 +9,10 @@ impl From<AggressionComponent> for Component {
 }
 
 pub fn aggression(state: &mut GameState) {
-	let components = state.creatures.all::<AggressionComponent>().iter().enumerate();
-	for (id, component) in components {
-		if let Some(_) = component {
-			state.hit(id, PLAYER_ID);
-		}
+	let ids: Vec<usize> = state.creatures.all::<AggressionComponent>()
+									.iter().enumerate()
+									.filter_map(|(id, a)| a.clone().map(|_| id)).collect();
+	for id in ids {
+		state.hit(id, PLAYER_ID);
 	}
 }

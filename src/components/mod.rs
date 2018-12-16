@@ -11,11 +11,6 @@ pub use self::name::NameComponent;
 pub use self::attack::AttackComponent;
 pub use self::aggression::{AggressionComponent};
 
-pub const NAME_COMPONENT_ID: TypeId = TypeId::of::<NameComponent>();
-pub const HEALTH_COMPONENT_ID: TypeId = TypeId::of::<HealthComponent>();
-pub const ATTACK_COMPONENT_ID: TypeId = TypeId::of::<AttackComponent>();
-pub const AGGRESSION_COMPONENT_ID: TypeId = TypeId::of::<AggressionComponent>();
-
 #[derive(Clone, Debug)]
 pub enum Component {
 	Name,

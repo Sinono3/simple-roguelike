@@ -32,25 +32,27 @@ pub struct CreatureData {
 }
 impl CreatureData {
 	pub fn new(name: &str, health: i32) -> CreatureData {
-		let data = CreatureData {
+		let mut data = CreatureData {
 			contents: Box::new(AnyMap::new())
 		};
-		data.contents.insert(NameComponent(String::from(name)));
-		data.contents.insert(HealthComponent(health));
+		data.contents.insert(Box::new(NameComponent(String::from(name))));
+		data.contents.insert(Box::new(HealthComponent(health)));
 		data
 	}
-	pub fn with(self, component: Box<Any>) -> Self {
+	pub fn with<T: 'static>(mut self, component: Box<T>) -> Self {
 		self.contents.insert(component);
 		self
 	}
 	pub fn contains<T: 'static>(&self) -> bool {
-		self.contents.contains::<T>()
+		self.contents.contains::<Box<T>>()
 	}
-	pub fn get<T: 'static>(&self) -> Option<&T> {
-		self.contents.get::<T>()
-	}
-	fn remove<T: 'static>(&self) -> Option<T> {
-		self.contents.remove::<T>()
+	fn remove<T: 'static>(&mut self) -> Box<Option<T>> {
+		let content = self.contents.remove::<Box<T>>();
+		if let Some(c) = content {
+			Box::new(Some(*c))
+		} else {
+			Box::new(None)
+		}
 	}
 	/*pub fn clone(&self) -> CreatureData {
 		let deref = *self.contents.deref();
@@ -69,7 +71,7 @@ pub struct CreatureMap {
 
 impl CreatureMap {
 	pub fn new() -> CreatureMap {
-		let creature_map = CreatureMap {
+		let mut creature_map = CreatureMap {
 			alloc: CreatureAllocator::new(),
 			components: AnyMap::new(),
 			len: 0,
@@ -90,16 +92,16 @@ impl CreatureMap {
 		creature_map
 	}
 	fn set_none(&mut self, id: CreatureId) {
-		self.components.get_mut::<Vec<Option<NameComponent>>>().expect(ANYMAP_ERROR)[id] = None;
-		self.components.get_mut::<Vec<Option<HealthComponent>>>().expect(ANYMAP_ERROR)[id] = None;
-		self.components.get_mut::<Vec<Option<AttackComponent>>>().expect(ANYMAP_ERROR)[id] = None;
-		self.components.get_mut::<Vec<Option<AggressionComponent>>>().expect(ANYMAP_ERROR)[id] = None;
+		assert!(self.set::<NameComponent>(id, None), ANYMAP_ERROR);
+		assert!(self.set::<HealthComponent>(id, None), ANYMAP_ERROR);
+		assert!(self.set::<AttackComponent>(id, None), ANYMAP_ERROR);
+		assert!(self.set::<AggressionComponent>(id, None), ANYMAP_ERROR);
 	}
 	fn push_none(&mut self) -> CreatureId {
-		self.components.get_mut::<Vec<Option<NameComponent>>>().expect(ANYMAP_ERROR).push(None);
-		self.components.get_mut::<Vec<Option<HealthComponent>>>().expect(ANYMAP_ERROR).push(None);
-		self.components.get_mut::<Vec<Option<AttackComponent>>>().expect(ANYMAP_ERROR).push(None);
-		self.components.get_mut::<Vec<Option<AggressionComponent>>>().expect(ANYMAP_ERROR).push(None);
+		self.all_mut::<NameComponent>().push(None);
+		self.all_mut::<HealthComponent>().push(None);
+		self.all_mut::<AttackComponent>().push(None);
+		self.all_mut::<AggressionComponent>().push(None);
 		self.len += 1;
 		self.len - 1
 	}
@@ -113,7 +115,7 @@ impl CreatureMap {
 		};
 
 		// prevent same name.
-		let new_name = if let Some(name) = creature.remove::<NameComponent>() {
+		let new_name = if let Some(mut name) = *creature.remove::<NameComponent>() {
 			if let Some(count) = self.name_count.get_mut(name.0.as_str()) {
 				*count += 1;
 				name.0.push_str(&count.to_string());
@@ -126,18 +128,14 @@ impl CreatureMap {
 		};
 
 		// add components
-		self.components.get_mut::<Vec<Option<NameComponent>>>().expect(ANYMAP_ERROR)[id]
-													= creature.remove::<NameComponent>();
-		self.components.get_mut::<Vec<Option<HealthComponent>>>().expect(ANYMAP_ERROR)[id]
-													= creature.remove::<HealthComponent>();
-		self.components.get_mut::<Vec<Option<AttackComponent>>>().expect(ANYMAP_ERROR)[id]
-													= creature.remove::<AttackComponent>();
-		self.components.get_mut::<Vec<Option<AggressionComponent>>>().expect(ANYMAP_ERROR)[id]
-													= creature.remove::<AggressionComponent>();
+		self.set::<NameComponent>(id, new_name);
+		self.set::<HealthComponent>(id, *creature.remove::<HealthComponent>());
+		self.set::<AttackComponent>(id, *creature.remove::<AttackComponent>());
+		self.set::<AggressionComponent>(id, *creature.remove::<AggressionComponent>());
 
 		id
 	}
-	// TODO: be able to add more than 1 creature at once, and return a slice of creature ids.
+	// TODO: multiple concurrent component borrows, like a tuple (Component, Component...)
 	pub fn get<T: 'static>(&self, id: CreatureId) -> Option<&T> {
 		let vec = self.components.get::<Vec<Option<T>>>().expect(ANYMAP_ERROR);
 		vec.get(id).expect("Game logic error: Creature doesn't exist.").as_ref()
@@ -145,6 +143,15 @@ impl CreatureMap {
 	pub fn get_mut<T: 'static>(&mut self, id: CreatureId) -> Option<&mut T> {
 		let vec = self.components.get_mut::<Vec<Option<T>>>().expect(ANYMAP_ERROR);
 		vec.get_mut(id).expect("Game logic error: Creature doesn't exist.").as_mut()
+	}
+	pub fn set<T: 'static>(&mut self, id: CreatureId, content: Option<T>) -> bool {
+		let vec = self.components.get_mut::<Vec<Option<T>>>();
+		if let Some(v) = vec {
+			v[id] = content;
+			true
+		} else {
+			false
+		}
 	}
 	pub fn all<T: 'static>(&self) -> &Vec<Option<T>> {
 		let vec = self.components.get::<Vec<Option<T>>>().expect(ANYMAP_ERROR);
@@ -159,7 +166,7 @@ impl CreatureMap {
 		self.alloc.deallocate(id);
 	}
 	pub fn find_by_name(&self, name: &str) -> Option<CreatureId> {
-		let vec = self.components.get_mut::<Vec<Option<NameComponent>>>().expect(ANYMAP_ERROR);
+		let vec = self.components.get::<Vec<Option<NameComponent>>>().expect(ANYMAP_ERROR);
 
 		vec.iter().position(|x|
 			if let Some(c) = x {

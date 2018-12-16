@@ -1,7 +1,8 @@
-use crate::components::*;
 use crossterm::style::{Color, style};
 
+use crate::components::*;
 use crate::creatures::*;
+use crate::commands::{Command, DebugCommand};
 
 pub const PLAYER_ID: CreatureId = 0;
 
@@ -44,20 +45,24 @@ impl GameState {
 	pub fn hit(&mut self, inflictor_id: CreatureId, target_id: CreatureId) {
 		assert!(inflictor_id != target_id, "Game logic error: a creature can't attack itself.");
 
-		let existance_error = "Game logic error: the gotten creature doesn't exist.";
+		let existance_error = "Game logic error: the gotten component doesn't exist.";
 
 		// get name and damage from inflictor
 		let (name, damage) = {
 			// Can use unwrap because the target the inflictor is hitting must exist
-			(self.creatures.get_mut::<NameComponent>(inflictor_id).expect(existance_error).0.clone(),
-			 self.creatures.get::<AttackComponent>(inflictor_id).expect(existance_error).damage)
+			(self.creatures.get::<NameComponent>(inflictor_id)
+						   .expect("Game logic error: Inflictor doesn't have a name.").0.clone(),
+			 self.creatures.get::<AttackComponent>(inflictor_id)
+ 						   .expect(format!("Game logic error: Inflictor can't attack. {}", inflictor_id).as_str()).damage)
 		};
 		// get name and apply damage to target
 		let (target_name, target_health) = {
 			// Can unwrap because the target must be alive.
 			let (name, health) =
-				(self.creatures.get_mut::<NameComponent>(target_id).expect(existance_error).0.clone(),
-				 self.creatures.get::<HealthComponent>(target_id).expect(existance_error));
+				(self.creatures.get::<NameComponent>(target_id)
+							   .expect("Game logic error: Victim doesn't have a name").0.clone(),
+				 self.creatures.get_mut::<HealthComponent>(target_id)
+				 			   .expect("Game logic error: Victim is immortal."));
 			health.damage(damage);
 			(name, health.0)
 		};
@@ -92,7 +97,7 @@ impl GameState {
 	}
 	pub fn die(&mut self, dead_id: CreatureId) {
 		let name = self.creatures.get::<NameComponent>(dead_id)
-									  .expect("Game internal error: Creature doesn't have a name!").0;
+									  .expect("Game internal error: Creature doesn't have a name!").0.clone();
 		self.creatures.remove(dead_id);
 
 		let target_str = if dead_id == PLAYER_ID {
@@ -108,9 +113,9 @@ impl GameState {
 pub fn player_system(state: &mut GameState) {
 	// Can unwrap here because the player should exist.
 	// If not then why should the game even be running.
-	let player_health = state.creatures.get(PLAYER_ID)
+	let player_health = state.creatures.get::<HealthComponent>(PLAYER_ID)
 									   .expect("Game logic error: the player is dead and the game is still running.")
-									   .health;
+									   .0;
 
 	// Player control consists of three phases:
 	// 1- Show the enviroment and conditions:
@@ -120,13 +125,25 @@ pub fn player_system(state: &mut GameState) {
 	let mut creature_string = String::new();
 
 	let mut count = 0usize;
+
+	/* Left for debug purposes later. Might be converted into command.
+	for (id, name) in state.creatures.all::<AttackComponent>().iter().enumerate() {
+		if let Some(str) = name {
+			println!("{}: yes", id);
+		} else {
+			println!("{}: None", id);
+		}
+	}*/
+
 	// Can unwrap because alive() ASSURES that the returned creatures are alive.
-	for creature in state.creatures.alive().iter()
+	for name in state.creatures.alive().iter()
 										   .filter(|id| **id != PLAYER_ID)
-										   .map(|id| state.creatures.get(*id)
-										   .expect("Game internal error: alive() function returned a None.")) {
+										   .map(|id| state.creatures.get::<NameComponent>(*id)
+										   .expect(
+											   format!("Game internal error: creature {} should exist", id).as_str()
+										   ).0.clone()) {
 		creature_string.push_str(
-			format!("{}; ", creature.name).as_str()
+			format!("{}; ", name).as_str()
 		);
 		count += 1;
 	}
@@ -150,11 +167,12 @@ pub fn player_system(state: &mut GameState) {
 				break state.hit(PLAYER_ID, target);
 			}
 			Command::Examine(target) => {
+				/* Removed until multiple component borrows at the same time in CreatureMap.
 				let creature = state.creatures.get(target)
 											  .expect("Game logic error: if the player is choosing this creature then it must exist.");
 				let stylized = style(format!("{} has {} hitpoints remaining and does {} damage.",
 				creature.name, creature.health, creature.damage)).with(Color::Red);
-				println!("{}", stylized);
+				println!("{}", stylized);*/
 			}
 			Command::Status => {
 				println!("{}", style(format!("== You have {} hitpoints remaining.", player_health))
@@ -170,8 +188,9 @@ status: Show your character's status and remaining enemies."
 				);
 			}
 			Command::Debug(DebugCommand::Remove(target)) => {
-				let creature: Creature = state.creatures.remove(target);
-				println!("Creature '{}' with the id {} has been removed from the game.", creature.name, target);
+				// Removed until multiple component borrows at the same time in CreatureMap.
+				//let creature: Creature = state.creatures.remove(target);
+				//println!("Creature '{}' with the id {} has been removed from the game.", creature.name, target);
 			}
 		}
 		println!("{}", style("Enter another command:")
