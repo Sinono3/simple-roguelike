@@ -59,23 +59,30 @@ impl CreatureData {
 
 pub struct CreatureMap {
 	alloc: CreatureAllocator,
-	name_components: Vec<Option<NameComponent>>,
-	health_components: Vec<Option<HealthComponent>>,
-	attack_components: Vec<Option<AttackComponent>>,
-	aggression_components: Vec<Option<AggressionComponent>>,
+	components: AnyMap,
 	name_count: HashMap<String, i32>,
 }
 
 impl CreatureMap {
 	pub fn new() -> CreatureMap {
-		CreatureMap {
+		let creature_map = CreatureMap {
 			alloc: CreatureAllocator::new(),
-			name_components: Vec::new(),
-			health_components: Vec::new(),
-			attack_components: Vec::new(),
-			aggression_components: Vec::new(),
+			components: AnyMap::new(),
 			name_count: HashMap::new(),
-		}
+		};
+		let name_components: Vec<Option<NameComponent>> = Vec::new();
+		creature_map.components.insert(name_components);
+
+		let name_components: Vec<Option<HealthComponent>> = Vec::new();
+		creature_map.components.insert(name_components);
+
+		let name_components: Vec<Option<AttackComponent>> = Vec::new();
+		creature_map.components.insert(name_components);
+
+		let name_components: Vec<Option<AggressionComponent>> = Vec::new();
+		creature_map.components.insert(name_components);
+
+		creature_map
 	}
 	pub fn add(&mut self, mut creature: CreatureData) -> CreatureId {
 		// get id and decide if allocating or not.
