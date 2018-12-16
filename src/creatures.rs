@@ -1,7 +1,5 @@
-#[macro_use]
 use std::collections::HashMap;
-use anymap::any::CloneAny;
-use anymap::Map;
+use anymap::{Map, any::CloneAny};
 use crate::components::{*, map::ComponentMap};
 
 type CloneMap = Map<CloneAny>;
@@ -167,7 +165,7 @@ impl CreatureMap {
 		map.as_mut()
 	}
 	pub fn remove(&mut self, id: CreatureId) -> Option<CreatureData> {
-		let mut data = CreatureData::new_empty()
+		let data = CreatureData::new_empty()
 			.with_option(self.remove_component::<NameComponent>(id))
 			.with_option(self.remove_component::<HealthComponent>(id))
 			.with_option(self.remove_component::<AttackComponent>(id))

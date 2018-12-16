@@ -109,10 +109,6 @@ impl GameState {
 					.with(Color::Red)))
 					.with(Color::Green)
 		};
-		if dead_id == PLAYER_ID {
-			loop {}
-		}
-
 		println!("{}", target_str);
 	}
 }

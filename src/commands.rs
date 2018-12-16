@@ -1,15 +1,13 @@
 use std::io;
-use std::io::prelude::*;
-use crossterm::style::{Color, style};
+use crossterm::{style::{Color, style}};
 
 use crate::game_state::{GameState, PLAYER_ID};
 use crate::creatures::CreatureId;
 
-pub fn pause() {
+/*pub fn pause() {
     // Read a single byte and discard
-    let _ = io::stdin().read(&mut [1u8]).unwrap();
-    let _ = io::stdin().read(&mut [1u8]).unwrap();
-}
+    input().read_char();
+}*/
 
 const DEBUG_MODE_ENABLED: bool = true;
 

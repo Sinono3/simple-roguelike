@@ -1,1 +1,1 @@
-pub type ComponentMap<T: Clone> = Vec<Option<T>>;
+pub type ComponentMap<T> = Vec<Option<T>>;
