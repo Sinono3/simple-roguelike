@@ -1,4 +1,4 @@
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct HealthComponent(pub i32);
 
 #[allow(dead_code)]

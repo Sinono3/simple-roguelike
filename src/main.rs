@@ -12,7 +12,7 @@ mod components;
 
 use crate::components::{AttackComponent, AggressionComponent};
 use crate::game_state::GameState;
-use crate::creatures::*;
+use crate::creatures::CreatureData;
 
 fn main() {
 	let terminal = terminal();
@@ -20,7 +20,7 @@ fn main() {
 
 	let human_warrior = CreatureData::new("human_warrior", 20)
 		.with(AttackComponent { damage: 4 });
-	
+
 	let goblin = CreatureData::new("goblin", 12)
 		.with(AttackComponent { damage: 2 })
 		.with(AggressionComponent);

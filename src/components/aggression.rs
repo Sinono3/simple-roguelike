@@ -1,6 +1,6 @@
 use super::super::game_state::{GameState, PLAYER_ID};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AggressionComponent;
 
 pub fn aggression(state: &mut GameState) {

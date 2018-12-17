@@ -25,14 +25,13 @@ impl AttackDirection {
 		}
 	}
 }
-
 impl GameState {
 	pub fn new(player: CreatureData) -> GameState {
 		let mut state = GameState {
 			creatures: CreatureMap::new()
 		};
 		state.creatures.add(player);
-		state
+		return state;
 	}
 	pub fn round(&mut self) -> bool {
 		// systems.

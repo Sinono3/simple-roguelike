@@ -1,86 +1,13 @@
 use std::collections::HashMap;
-use anymap::{Map, any::CloneAny};
+use anymap::AnyMap;
+use super::{CreatureId, creature_allocator::CreatureAllocator, creature_data::CreatureData};
 use crate::components::{*, map::ComponentMap};
 
-type CloneMap = Map<CloneAny>;
 const ANYMAP_ERROR: &str = "Game logic error: CreatureMap does not contain the respective component vector.";
-
-pub type CreatureId = usize;
-
-struct CreatureAllocator {
-	free: Vec<CreatureId>,
-	len: usize
-}
-impl CreatureAllocator {
-	fn new() -> CreatureAllocator {
-		CreatureAllocator {
-			free: Vec::new(),
-			len: 0,
-		}
-	}
-	fn allocate(&mut self) -> Option<CreatureId> {
-		let result = self.free.pop();
-		if result == None {
-			self.len += 1;
-		}
-		result
-	}
-	fn deallocate(&mut self, id: CreatureId) {
-		self.free.push(id);
-	}
-	fn is_free(&self, id: CreatureId) -> bool {
-		self.free.contains(&id)
-	}
-	fn exists(&self, id: CreatureId) -> bool {
-		!self.is_free(id) && id < self.len
-	}
-}
-#[derive(Clone)]
-pub struct CreatureData {
-	contents: CloneMap,
-}
-impl CreatureData {
-	fn new_empty() -> CreatureData {
-		CreatureData {
-			contents: CloneMap::new()
-		}
-	}
-	pub fn new(name: &str, health: i32) -> CreatureData {
-		Self::new_empty()
-			.with(NameComponent(String::from(name)))
-			.with(HealthComponent(health))
-	}
-	pub fn with<T: 'static>(mut self, component: T) -> Self
-		where T: Clone {
-		self.contents.insert(component);
-		self
-	}
-	pub fn with_option<T: 'static>(mut self, component: Option<T>) -> Self
-		where T: Clone {
-		if let Some(c) = component {
-			self.contents.insert(c);
-		}
-		self
-	}
-	#[allow(dead_code)]
-	pub fn contains<T: 'static>(&self) -> bool
-		where T: Clone {
-		self.contents.contains::<T>()
-	}
-	pub fn remove<T: 'static>(&mut self) -> Option<T>
-		where T: Clone {
-		let content = self.contents.remove::<T>();
-		if let Some(c) = content {
-			Some(c)
-		} else {
-			None
-		}
-	}
-}
 
 pub struct CreatureMap {
 	alloc: CreatureAllocator,
-	components: CloneMap,
+	pub components: AnyMap,
 	name_count: HashMap<String, i32>,
 }
 
@@ -89,7 +16,7 @@ impl CreatureMap {
 	pub fn new() -> CreatureMap {
 		let mut creature_map = CreatureMap {
 			alloc: CreatureAllocator::new(),
-			components: CloneMap::new(),
+			components: AnyMap::new(),
 			name_count: HashMap::new(),
 		};
 
@@ -130,22 +57,30 @@ impl CreatureMap {
 		id
 	}
 	// TODO: multiple concurrent component borrows, like a tuple (Component, Component...)
-	pub fn get<T: 'static>(&self, id: CreatureId) -> Option<&T>
-		where T: Clone {
+	pub fn get<T: 'static>(&self, id: CreatureId) -> Option<&T> where T: Clone {
 		let vec = self.components.get::<ComponentMap<T>>().expect(ANYMAP_ERROR);
 		vec.get(id).expect(format!("Game logic error: Creature {} doesn't exist.", id)
 				.as_str())
 				.as_ref()
 	}
-	pub fn get_mut<T: 'static>(&mut self, id: CreatureId) -> Option<&mut T>
-		where T: Clone {
+	pub fn get_mut<T: 'static>(&mut self, id: CreatureId) -> Option<&mut T> where T: Clone {
 		let vec = self.components.get_mut::<ComponentMap<T>>().expect(ANYMAP_ERROR);
 		vec.get_mut(id).expect(format!("Game logic error: Creature {} doesn't exist.", id)
 				.as_str())
 				.as_mut()
 	}
-	pub fn set<T: 'static>(&mut self, id: CreatureId, content: Option<T>) -> bool
-		where T: Clone {
+	/*pub fn get_two_mut<T: 'static, T2: 'static>(&mut self, id: CreatureId)
+			-> (Option<&mut T>, Option<&mut T2>) where T: Clone, T2: Clone {
+		(self.components.get_mut::<ComponentMap<T>>().expect(ANYMAP_ERROR)
+				.get_mut(id).expect(format!("Game logic error: Creature {} doesn't exist.", id)
+				.as_str())
+				.as_mut(),
+		self.components.get_mut::<ComponentMap<T2>>().expect(ANYMAP_ERROR)
+				.get_mut(id).expect(format!("Game logic error: Creature {} doesn't exist.", id)
+				.as_str())
+				.as_mut())
+	}*/
+	pub fn set<T: 'static>(&mut self, id: CreatureId, content: Option<T>) -> bool where T: Clone {
 		let vec = self.components.get_mut::<ComponentMap<T>>();
 		if let Some(v) = vec {
 			v[id] = content;
@@ -154,13 +89,11 @@ impl CreatureMap {
 			false
 		}
 	}
-	pub fn all<T: 'static>(&self) -> &ComponentMap<T>
-		where T: Clone {
+	pub fn all<T: 'static>(&self) -> &ComponentMap<T> where T: Clone {
 		let map = self.components.get::<ComponentMap<T>>().expect(ANYMAP_ERROR);
 		map.as_ref()
 	}
-	pub fn all_mut<T: 'static>(&mut self) -> &mut Vec<Option<T>>
-		where T: Clone {
+	pub fn all_mut<T: 'static>(&mut self) -> &mut Vec<Option<T>> where T: Clone {
 		let map = self.components.get_mut::<ComponentMap<T>>().expect(ANYMAP_ERROR);
 		map.as_mut()
 	}
@@ -174,8 +107,7 @@ impl CreatureMap {
 		self.alloc.deallocate(id);
 		Some(data)
 	}
-	pub fn remove_component<T: 'static>(&mut self, id: CreatureId) -> Option<T>
-		where T: Clone {
+	pub fn remove_component<T: 'static>(&mut self, id: CreatureId) -> Option<T> where T: Clone {
 		let map = self.components.get_mut::<ComponentMap<T>>().expect(ANYMAP_ERROR);
 		let creature = map.remove(id);
 		map.insert(id, None);
@@ -193,8 +125,8 @@ impl CreatureMap {
 		)
 	}
 	pub fn alive(&self) -> Vec<CreatureId> {
-		(0..self.alloc.len)
-				.filter(|id| !self.alloc.is_free(*id))
+		(0..self.alloc.len())
+				.filter(|id| self.alloc.exists(*id))
 				.collect()
 	}
 	// BE CAREFUL. VERY UNSTABLE. NEEDS GENERATIONAL INDEXES ASAP.
@@ -202,7 +134,7 @@ impl CreatureMap {
 		self.alloc.exists(id)
 	}
 	pub fn len(&self) -> usize {
-		self.alloc.len
+		self.alloc.len()
 	}
 }
 fn set_none(map: &mut CreatureMap, id: CreatureId) {
@@ -216,5 +148,5 @@ fn push_none(map: &mut CreatureMap) -> CreatureId {
 	map.all_mut::<HealthComponent>().push(None);
 	map.all_mut::<AttackComponent>().push(None);
 	map.all_mut::<AggressionComponent>().push(None);
-	map.alloc.len - 1
+	map.len() - 1
 }
