@@ -1,4 +1,4 @@
-use anymap::{Map, any::CloneAny};
+use crate::util::anymap::{Map, any::CloneAny};
 use crate::components::{NameComponent, HealthComponent};
 
 type CloneMap = Map<CloneAny>;

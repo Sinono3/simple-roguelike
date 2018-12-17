@@ -1,5 +1,6 @@
-extern crate anymap;
+//extern crate anymap;
 extern crate crossterm;
+extern crate multi_mut;
 
 use crossterm::terminal::*;
 use crossterm::style::{Color, style};
@@ -8,7 +9,7 @@ mod game_state;
 mod creatures;
 mod commands;
 mod components;
-
+mod util;
 
 use crate::components::{AttackComponent, AggressionComponent};
 use crate::game_state::GameState;
