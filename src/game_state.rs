@@ -44,25 +44,16 @@ impl GameState {
 	pub fn hit(&mut self, inflictor_id: CreatureId, target_id: CreatureId) {
 		assert!(inflictor_id != target_id, "Game logic error: a creature can't attack itself.");
 
-		// get name and damage from inflictor
-		let (name, damage) = {
-			// Can use unwrap because the target the inflictor is hitting must exist
-			(self.creatures.get::<NameComponent>(inflictor_id)
-					.expect("Game logic error: Inflictor doesn't have a name.").0.clone(),
-			self.creatures.get::<AttackComponent>(inflictor_id)
- 					.expect(format!("Game logic error: Inflictor can't attack. {}", inflictor_id).as_str()).damage)
-		};
-		// get name and apply damage to target
-		let (target_name, target_health) = {
-			// Can unwrap because the target must be alive.
-			let (name, health) =
-				(self.creatures.get::<NameComponent>(target_id)
-						.expect("Game logic error: Victim doesn't have a name").0.clone(),
-				self.creatures.get_mut::<HealthComponent>(target_id)
-				 		.expect("Game logic error: Victim is immortal."));
-			health.damage(damage);
-			(name, health.0)
-		};
+		let (name, damage) = (self.creatures.get::<NameComponent>(inflictor_id)
+							  .expect("Game logic error: Inflictor doesn't have a name.").0.clone(),
+							  self.creatures.get::<AttackComponent>(inflictor_id)
+							  .expect(format!("Game logic error: Inflictor can't attack. {}", inflictor_id).as_str()).damage);
+		let (target_name, target_health) = (self.creatures.get::<NameComponent>(target_id)
+							  .expect("Game logic error: Victim doesn't have a name").0.clone(),
+							  self.creatures.get_mut::<HealthComponent>(target_id)
+			  		  		  .expect("Game logic error: Victim is immortal."));
+		target_health.damage(damage);
+
 		// english stuff
 		let mut direction = AttackDirection::Neutral;
 
@@ -84,10 +75,10 @@ impl GameState {
 		println!("{}", style(final_str)
 					   .with(direction.to_color()));
 
-		if target_health > 0 {
+		if target_health.0 > 0 {
 			if target_id != PLAYER_ID {
 				let final_str = format!("> {} now has {} hitpoints remaining.",
-						target_str, target_health.to_string());
+						target_str, target_health.0.to_string());
 				println!("{}", style(final_str).with(Color::Green));
 			}
 		} else {

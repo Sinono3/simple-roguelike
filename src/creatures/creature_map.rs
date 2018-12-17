@@ -56,7 +56,6 @@ impl CreatureMap {
 
 		id
 	}
-	// TODO: multiple concurrent component borrows, like a tuple (Component, Component...)
 	pub fn get<T: 'static>(&self, id: CreatureId) -> Option<&T> where T: Clone {
 		let vec = self.components.get::<ComponentMap<T>>().expect(ANYMAP_ERROR);
 		vec.get(id).expect(format!("Game logic error: Creature {} doesn't exist.", id)
@@ -69,17 +68,6 @@ impl CreatureMap {
 				.as_str())
 				.as_mut()
 	}
-	/*pub fn get_two_mut<T: 'static, T2: 'static>(&mut self, id: CreatureId)
-			-> (Option<&mut T>, Option<&mut T2>) where T: Clone, T2: Clone {
-		(self.components.get_mut::<ComponentMap<T>>().expect(ANYMAP_ERROR)
-				.get_mut(id).expect(format!("Game logic error: Creature {} doesn't exist.", id)
-				.as_str())
-				.as_mut(),
-		self.components.get_mut::<ComponentMap<T2>>().expect(ANYMAP_ERROR)
-				.get_mut(id).expect(format!("Game logic error: Creature {} doesn't exist.", id)
-				.as_str())
-				.as_mut())
-	}*/
 	pub fn set<T: 'static>(&mut self, id: CreatureId, content: Option<T>) -> bool where T: Clone {
 		let vec = self.components.get_mut::<ComponentMap<T>>();
 		if let Some(v) = vec {
@@ -150,3 +138,18 @@ fn push_none(map: &mut CreatureMap) -> CreatureId {
 	map.all_mut::<AggressionComponent>().push(None);
 	map.len() - 1
 }
+/*macro_rules! function_get_mut {
+	($number: expr, $number_name: expr) => (
+		pub fn get_($number_name)_mut<T: 'static, T2: 'static>(&mut self, id: CreatureId)
+				-> (Option<&mut T>, Option<&mut T2>) where T: Clone, T2: Clone {
+			(self.components.get_mut::<ComponentMap<T>>().expect(ANYMAP_ERROR)
+					.get_mut(id).expect(format!("Game logic error: Creature {} doesn't exist.", id)
+					.as_str())
+					.as_mut(),
+			self.components.get_mut::<ComponentMap<T2>>().expect(ANYMAP_ERROR)
+					.get_mut(id).expect(format!("Game logic error: Creature {} doesn't exist.", id)
+					.as_str())
+					.as_mut())
+		}
+	)
+}*/
