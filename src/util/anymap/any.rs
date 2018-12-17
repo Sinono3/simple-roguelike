@@ -6,6 +6,7 @@
 use std::fmt;
 use std::any::Any as StdAny;
 
+#[allow(where_clauses_object_safety)]
 #[doc(hidden)]
 pub trait CloneToAny {
     /// Clone `self` into a new `Box<CloneAny>` object.
@@ -61,7 +62,7 @@ macro_rules! define {
         /// more details on `Any` in general.
         ///
         /// This trait is not `std::any::Any` but rather a type extending that for this library’s
-        /// purposes so that it can be combined with marker traits like 
+        /// purposes so that it can be combined with marker traits like
         /// <code><a class=trait title=core::marker::Send
         /// href=http://doc.rust-lang.org/std/marker/trait.Send.html>Send</a></code> and
         /// <code><a class=trait title=core::marker::Sync

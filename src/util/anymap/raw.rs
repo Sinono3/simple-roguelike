@@ -49,6 +49,7 @@ fn type_id_hasher() {
 }
 
 // Makes the hashmap multimut.
+#[allow(unused_imports)]
 use multi_mut::{HashMapMultiMut, BTreeMapMultiMut};
 
 /// The raw, underlying form of a `Map`.
