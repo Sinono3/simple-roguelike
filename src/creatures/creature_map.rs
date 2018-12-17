@@ -1,7 +1,7 @@
 use std::collections::HashMap;
-use anymap::AnyMap;
 use super::{CreatureId, creature_allocator::CreatureAllocator, creature_data::CreatureData};
 use crate::components::{*, map::ComponentMap};
+use crate::util::anymap::{AnyMap};
 
 const ANYMAP_ERROR: &str = "Game logic error: CreatureMap does not contain the respective component vector.";
 

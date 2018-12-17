@@ -167,12 +167,16 @@ pub fn player_system(state: &mut GameState) {
 				break state.hit(PLAYER_ID, target);
 			}
 			Command::Examine(target) => {
-				/* Removed until multiple component borrows at the same time in CreatureMap.
-				let creature = state.creatures.get(target)
-											  .expect("Game logic error: if the player is choosing this creature then it must exist.");
+				let name = state.creatures.get::<NameComponent>(target)
+						.expect("Game logic error: if the player is choosing this creature then it must exist.").0.as_str();
+				let health = state.creatures.get::<HealthComponent>(target)
+						.expect("Game logic error: if the player is choosing this creature then it must exist.").0;
+				let damage = state.creatures.get::<AttackComponent>(target)
+						.expect("Game logic error: if the player is choosing this creature then it must exist.").damage;
+
 				let stylized = style(format!("{} has {} hitpoints remaining and does {} damage.",
-				creature.name, creature.health, creature.damage)).with(Color::Red);
-				println!("{}", stylized);*/
+				name, health, damage)).with(Color::Cyan);
+				println!("{}", stylized);
 			}
 			Command::Status => {
 				println!("{}", style(format!("== You have {} hitpoints remaining.", player_health))
