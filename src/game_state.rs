@@ -37,12 +37,6 @@ impl GameState {
 	}
 	pub fn round(&mut self) -> bool {
 		// systems.
-		let owns = &self.creatures.get::<OwnerComponent>(0).unwrap().contents;
-
-		for i in owns {
-			println!("{}", i);
-		}
-
 		player_system(self);
 		crate::components::creature::systems::aggression(self);
 
@@ -126,15 +120,6 @@ pub fn player_system(state: &mut GameState) {
 	let mut creature_string = String::new();
 
 	let mut count = 0usize;
-
-	/* Left for debug purposes later. Might be converted into command.
-	for (id, name) in state.creatures.all::<AttackComponent>().iter().enumerate() {
-		if let Some(str) = name {
-			println!("{}: yes", id);
-		} else {
-			println!("{}: None", id);
-		}
-	}*/
 
 	// Can unwrap because alive() ASSURES that the returned creatures are alive.
 	for name in state.creatures.existing().iter()
