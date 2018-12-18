@@ -8,10 +8,12 @@ impl Component for HealthComponent {
 
 #[allow(dead_code)]
 impl HealthComponent {
-	pub fn heal(&mut self, healing: i32) {
+	pub fn heal(&mut self, healing: i32) -> i32 {
 		self.0 += healing;
+		self.0
 	}
-	pub fn damage(&mut self, damage: i32) {
+	pub fn damage(&mut self, damage: i32) -> i32 {
 		self.0 -= damage;
+		self.0
 	}
 }

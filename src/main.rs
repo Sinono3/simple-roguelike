@@ -11,7 +11,7 @@ mod components;
 mod util;
 
 use crate::components::{EntityType, EntityData};
-use crate::components::creature::{AttackComponent, AggressionComponent};
+use crate::components::creature::{NeutralComponent, AttackComponent, AggressionComponent};
 use crate::components::shared::{OwnerComponent};
 use crate::components::unanimate::*;
 use crate::game_state::GameState;
@@ -23,6 +23,11 @@ fn main() {
 	let mut state = GameState::new();
 
 	// items
+	let blood_dagger = EntityData::new("blood_dagger", 90, EntityType::Unanimate)
+			.with(OwnedComponent { owner: 3, entity_type: EntityType::Creature })
+			.with(WieldableComponent { damage: 8 })
+			.with(SalableComponent { worth: 470 });
+
 	let rusty_sword = EntityData::new("rusty_sword", 18, EntityType::Unanimate)
 			.with(OwnedComponent { owner: 0, entity_type: EntityType::Creature })
 			.with(WieldableComponent { damage: 2 })
@@ -37,7 +42,7 @@ fn main() {
 
 	state.unanimate.add(rusty_sword);
 	state.unanimate.add(stick);
-	//state.unanimate.add(stick2);
+	state.unanimate.add(blood_dagger);
 
 	// creatures
 
@@ -54,9 +59,14 @@ fn main() {
 			.with(AttackComponent { strength: 1, wielding: None })
 			.with(AggressionComponent);
 
+	let merchant = EntityData::new("merchant", 38, EntityType::Creature)
+				.with(AttackComponent { strength: 1, wielding: Some(2) })
+				.with(NeutralComponent::new());
+
 	state.creatures.add(human_warrior);
 	state.creatures.add(goblin.clone());
 	state.creatures.add(goblin.with(AttackComponent { strength: 1, wielding: Some(1) }));
+	state.creatures.add(merchant);
 
 	let line = style("##########################################").with(Color::DarkYellow);
 	println!("{}", line);

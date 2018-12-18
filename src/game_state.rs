@@ -38,6 +38,7 @@ impl GameState {
 	pub fn round(&mut self) -> bool {
 		// systems.
 		player_system(self);
+		crate::components::creature::systems::neutral(self);
 		crate::components::creature::systems::aggression(self);
 
 		true // TODO: player_system can return this, if not then the game will close because of the player's will
@@ -53,9 +54,15 @@ impl GameState {
 				.damage(&self.unanimate);
 		let target_name = self.creatures.get::<NameComponent>(target_id)
 				.expect("Game logic error: Victim doesn't have a name").0.clone();
-		let target_health = self.creatures.get_mut::<HealthComponent>(target_id)
-				.expect("Game logic error: Victim is immortal.");
-		target_health.damage(damage);
+		let target_health = {
+			self.creatures.get_mut::<HealthComponent>(target_id)
+					.expect("Game logic error: Victim is immortal.")
+					.damage(damage)
+		};
+
+		if let Some(n) = self.creatures.get_mut::<NeutralComponent>(target_id) {
+			n.deneutralize(inflictor_id);
+		}
 
 		// english stuff
 		let mut direction = AttackDirection::Neutral;
@@ -78,10 +85,10 @@ impl GameState {
 		println!("{}", style(final_str)
 					   .with(direction.to_color()));
 
-		if target_health.0 > 0 {
+		if target_health > 0 {
 			if target_id != PLAYER_ID {
 				let final_str = format!("> {} now has {} hitpoints remaining.",
-						target_str, target_health.0.to_string());
+						target_str, target_health.to_string());
 				println!("{}", style(final_str).with(Color::Green));
 			}
 		} else {
