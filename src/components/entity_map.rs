@@ -1,6 +1,7 @@
+use crate::util::anymap::raw::RawMap;
 use std::collections::HashMap;
 use crate::components::{EntityType, ComponentMap, Entity, EntityData,
-		EntityAllocator, shared::*, creature::*, unanimate::*};
+		EntityAllocator, shared::*, creature::*};
 use crate::util::anymap::AnyMap;
 
 const ANYMAP_ERROR: &str = "Game logic error: Trying to add a different purpose entity to map.";
@@ -23,7 +24,6 @@ impl EntityMap {
 		};
 		entity_map.components.insert::<ComponentMap<NameComponent>>(Vec::new());
 		entity_map.components.insert::<ComponentMap<HealthComponent>>(Vec::new());
-		entity_map.components.insert::<ComponentMap<OwnerComponent>>(Vec::new());
 
 		match entity_map.purpose {
 			EntityType::Creature => {
@@ -32,7 +32,6 @@ impl EntityMap {
 			}
 			EntityType::Unanimate => {
 				// TODO.
-				entity_map.components.insert::<ComponentMap<OwnedComponent>>(Vec::new());
 			}
 		}
 		entity_map
@@ -60,7 +59,6 @@ impl EntityMap {
 		};
 		self.set::<NameComponent>(id, new_name);
 		self.set::<HealthComponent>(id, entity_data.remove::<HealthComponent>());
-		self.set::<OwnerComponent>(id, entity_data.remove::<OwnerComponent>());
 
 		// adding specific components (this is just temporary, there will later be a cleaner way)
 		match self.purpose {
@@ -69,7 +67,7 @@ impl EntityMap {
 				self.set::<AggressionComponent>(id, entity_data.remove::<AggressionComponent>());
 			}
 			EntityType::Unanimate => {
-				self.set::<OwnedComponent>(id, entity_data.remove::<OwnedComponent>());
+				// TODO.
 			}
 		}
 
@@ -78,8 +76,7 @@ impl EntityMap {
 	pub fn remove(&mut self, id: Entity) -> Option<EntityData> {
 		let mut data = EntityData::new_empty(EntityType::Creature)
 			.with_option(self.remove_component::<NameComponent>(id))
-			.with_option(self.remove_component::<HealthComponent>(id))
-			.with_option(self.remove_component::<OwnerComponent>(id));
+			.with_option(self.remove_component::<HealthComponent>(id));
 
 		match self.purpose {
 			EntityType::Creature => {
@@ -87,7 +84,7 @@ impl EntityMap {
 				data.add_option(self.remove_component::<AggressionComponent>(id));
 			}
 			EntityType::Unanimate => {
-				data.add_option(self.remove_component::<OwnedComponent>(id));
+				// TODO.
 			}
 		}
 
@@ -163,7 +160,6 @@ impl EntityMap {
 fn set_none(map: &mut EntityMap, id: Entity) {
 	assert!(map.set::<NameComponent>(id, None), ANYMAP_ERROR);
 	assert!(map.set::<HealthComponent>(id, None), ANYMAP_ERROR);
-	assert!(map.set::<OwnerComponent>(id, None), ANYMAP_ERROR);
 
 	match map.purpose {
 		EntityType::Creature => {
@@ -171,14 +167,13 @@ fn set_none(map: &mut EntityMap, id: Entity) {
 			assert!(map.set::<AggressionComponent>(id, None), ANYMAP_ERROR);
 		}
 		EntityType::Unanimate => {
-			assert!(map.set::<OwnedComponent>(id, None), ANYMAP_ERROR);
+			// TODO.
 		}
 	}
 }
 fn push_none(map: &mut EntityMap) -> Entity {
 	map.all_mut::<NameComponent>().push(None);
 	map.all_mut::<HealthComponent>().push(None);
-	map.all_mut::<OwnerComponent>().push(None);
 
 	match map.purpose {
 		EntityType::Creature => {
@@ -187,7 +182,6 @@ fn push_none(map: &mut EntityMap) -> Entity {
 		}
 		EntityType::Unanimate => {
 			// TODO.
-			map.all_mut::<OwnedComponent>().push(None);
 		}
 	}
 	map.len() - 1

@@ -3,7 +3,7 @@ pub struct AttackComponent {
 	pub damage: i32
 }
 
-use crate::components::{Component, ComponentType};
+use crate::components::{Component, ComponentPurpose};
 impl Component for AttackComponent {
-	fn purpose() -> ComponentType { ComponentType::Creature }
+	fn purpose() -> ComponentPurpose { ComponentPurpose::Creature }
 }
