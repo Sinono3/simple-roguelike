@@ -1,5 +1,5 @@
-use crate::components::{Entity, EntityData, EntityMap, ComponentPurpose};
-use crate::components::shared::{NameComponent, HealthComponent};
+use crate::components::{Entity, EntityType, EntityData, EntityMap};
+use crate::components::shared::{OwnerComponent, NameComponent, HealthComponent};
 
 use crossterm::style::{Color, style};
 use crate::components::creature::*;
@@ -30,14 +30,20 @@ impl AttackDirection {
 impl GameState {
 	pub fn new(player: EntityData) -> GameState {
 		let mut state = GameState {
-			creatures: EntityMap::new(ComponentPurpose::Creature),
-			unanimate: EntityMap::new(ComponentPurpose::Unanimate),
+			creatures: EntityMap::new(EntityType::Creature),
+			unanimate: EntityMap::new(EntityType::Unanimate),
 		};
 		state.creatures.add(player);
 		return state;
 	}
 	pub fn round(&mut self) -> bool {
 		// systems.
+		let owns = &self.creatures.get::<OwnerComponent>(0).unwrap().contents;
+
+		for i in owns {
+			println!("{}", i);
+		}
+
 		player_system(self);
 		crate::components::creature::systems::aggression(self);
 
