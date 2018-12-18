@@ -1,9 +1,9 @@
 #[derive(Clone, Debug)]
 pub struct HealthComponent(pub i32);
 
-use crate::components::{Component, ComponentPurpose};
+use crate::components::{Component, ComponentType};
 impl Component for HealthComponent {
-	fn purpose() -> ComponentPurpose { ComponentPurpose::Shared }
+	fn purpose() -> ComponentType { ComponentType::Shared }
 }
 
 #[allow(dead_code)]

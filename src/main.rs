@@ -12,6 +12,7 @@ mod util;
 
 use crate::components::{EntityType, EntityData};
 use crate::components::creature::{AttackComponent, AggressionComponent};
+use crate::components::shared::{OwnerComponent};
 use crate::game_state::GameState;
 
 fn main() {
@@ -19,7 +20,12 @@ fn main() {
 	terminal.clear(ClearType::All);
 
 	let human_warrior = EntityData::new("human_warrior", 20, EntityType::Creature)
-		.with(AttackComponent { damage: 4 });
+		.with(AttackComponent {
+			damage: 4,
+		})
+		.with(OwnerComponent {
+			contents: vec![0, 1, 2],
+		});
 
 	let goblin = EntityData::new("goblin", 12, EntityType::Creature)
 		.with(AttackComponent { damage: 2 })

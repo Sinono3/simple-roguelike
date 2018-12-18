@@ -3,9 +3,9 @@ use crate::game_state::{GameState, PLAYER_ID};
 #[derive(Clone, Debug)]
 pub struct AggressionComponent;
 
-use crate::components::{Component, ComponentPurpose};
+use crate::components::{Component, ComponentType};
 impl Component for AggressionComponent {
-	fn purpose() -> ComponentPurpose { ComponentPurpose::Creature }
+	fn purpose() -> ComponentType { ComponentType::Creature }
 }
 
 pub fn aggression(state: &mut GameState) {
