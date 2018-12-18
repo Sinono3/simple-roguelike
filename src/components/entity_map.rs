@@ -33,6 +33,8 @@ impl EntityMap {
 			EntityType::Unanimate => {
 				// TODO.
 				entity_map.components.insert::<ComponentMap<OwnedComponent>>(Vec::new());
+				entity_map.components.insert::<ComponentMap<WieldableComponent>>(Vec::new());
+				entity_map.components.insert::<ComponentMap<SalableComponent>>(Vec::new());
 			}
 		}
 		entity_map
@@ -70,6 +72,8 @@ impl EntityMap {
 			}
 			EntityType::Unanimate => {
 				self.set::<OwnedComponent>(id, entity_data.remove::<OwnedComponent>());
+				self.set::<WieldableComponent>(id, entity_data.remove::<WieldableComponent>());
+				self.set::<SalableComponent>(id, entity_data.remove::<SalableComponent>());
 			}
 		}
 
@@ -88,6 +92,8 @@ impl EntityMap {
 			}
 			EntityType::Unanimate => {
 				data.add_option(self.remove_component::<OwnedComponent>(id));
+				data.add_option(self.remove_component::<WieldableComponent>(id));
+				data.add_option(self.remove_component::<SalableComponent>(id));
 			}
 		}
 
@@ -158,23 +164,6 @@ impl EntityMap {
 		self.alloc.len()
 	}
 }
-
-
-fn set_none(map: &mut EntityMap, id: Entity) {
-	assert!(map.set::<NameComponent>(id, None), ANYMAP_ERROR);
-	assert!(map.set::<HealthComponent>(id, None), ANYMAP_ERROR);
-	assert!(map.set::<OwnerComponent>(id, None), ANYMAP_ERROR);
-
-	match map.purpose {
-		EntityType::Creature => {
-			assert!(map.set::<AttackComponent>(id, None), ANYMAP_ERROR);
-			assert!(map.set::<AggressionComponent>(id, None), ANYMAP_ERROR);
-		}
-		EntityType::Unanimate => {
-			assert!(map.set::<OwnedComponent>(id, None), ANYMAP_ERROR);
-		}
-	}
-}
 fn push_none(map: &mut EntityMap) -> Entity {
 	map.all_mut::<NameComponent>().push(None);
 	map.all_mut::<HealthComponent>().push(None);
@@ -188,6 +177,8 @@ fn push_none(map: &mut EntityMap) -> Entity {
 		EntityType::Unanimate => {
 			// TODO.
 			map.all_mut::<OwnedComponent>().push(None);
+			map.all_mut::<WieldableComponent>().push(None);
+			map.all_mut::<SalableComponent>().push(None);
 		}
 	}
 	map.len() - 1

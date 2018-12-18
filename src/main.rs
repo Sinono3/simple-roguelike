@@ -13,25 +13,50 @@ mod util;
 use crate::components::{EntityType, EntityData};
 use crate::components::creature::{AttackComponent, AggressionComponent};
 use crate::components::shared::{OwnerComponent};
+use crate::components::unanimate::*;
 use crate::game_state::GameState;
 
 fn main() {
 	let terminal = terminal();
 	terminal.clear(ClearType::All);
 
+	let mut state = GameState::new();
+
+	// items
+	let rusty_sword = EntityData::new("rusty_sword", 18, EntityType::Unanimate)
+			.with(OwnedComponent { owner: 0, entity_type: EntityType::Creature })
+			.with(WieldableComponent { damage: 2 })
+			.with(SalableComponent { worth: 10 });
+
+	let stick = EntityData::new("stick", 18, EntityType::Unanimate)
+			.with(OwnedComponent { owner: 1, entity_type: EntityType::Creature })
+			.with(WieldableComponent { damage: 2 });
+
+	/*let stick2 = stick.clone()
+			.with(OwnedComponent { owner: 2, entity_type: EntityType::Creature });*/
+
+	state.unanimate.add(rusty_sword);
+	state.unanimate.add(stick);
+	//state.unanimate.add(stick2);
+
+	// creatures
+
 	let human_warrior = EntityData::new("human_warrior", 20, EntityType::Creature)
-		.with(AttackComponent {
-			damage: 4,
-		})
-		.with(OwnerComponent {
-			contents: vec![0, 1, 2],
-		});
+			.with(AttackComponent {
+				strength: 2,
+				wielding: Some(0)
+			})
+			.with(OwnerComponent {
+				contents: vec![0],
+			});
 
 	let goblin = EntityData::new("goblin", 12, EntityType::Creature)
-		.with(AttackComponent { damage: 2 })
-		.with(AggressionComponent);
+			.with(AttackComponent { strength: 1, wielding: None })
+			.with(AggressionComponent);
 
-	let mut state = GameState::new(human_warrior);
+	state.creatures.add(human_warrior);
+	state.creatures.add(goblin.clone());
+	state.creatures.add(goblin.with(AttackComponent { strength: 1, wielding: Some(1) }));
 
 	let line = style("##########################################").with(Color::DarkYellow);
 	println!("{}", line);
@@ -43,9 +68,6 @@ fn main() {
 
 	println!("{}", style("Type 'help' to see the available commands.")
 				   .with(Color::DarkGreen));
-
-	state.creatures.add(goblin.clone());
-	state.creatures.add(goblin);
 
 	while state.round() {
 		//playing

@@ -28,13 +28,12 @@ impl AttackDirection {
 	}
 }
 impl GameState {
-	pub fn new(player: EntityData) -> GameState {
+	pub fn new() -> GameState {
 		let mut state = GameState {
 			creatures: EntityMap::new(EntityType::Creature),
 			unanimate: EntityMap::new(EntityType::Unanimate),
 		};
-		state.creatures.add(player);
-		return state;
+		state
 	}
 	pub fn round(&mut self) -> bool {
 		// systems.
@@ -56,7 +55,8 @@ impl GameState {
 		let name = self.creatures.get::<NameComponent>(inflictor_id)
 				.expect("Game logic error: Inflictor doesn't have a name.").0.clone();
 		let damage = self.creatures.get::<AttackComponent>(inflictor_id)
-				.expect(format!("Game logic error: Inflictor can't attack. {}", inflictor_id).as_str()).damage;
+				.expect(format!("Game logic error: Inflictor can't attack. {}", inflictor_id).as_str())
+				.damage(&self.unanimate);
 		let target_name = self.creatures.get::<NameComponent>(target_id)
 				.expect("Game logic error: Victim doesn't have a name").0.clone();
 		let target_health = self.creatures.get_mut::<HealthComponent>(target_id)
@@ -172,7 +172,8 @@ pub fn player_system(state: &mut GameState) {
 				let health = state.creatures.get::<HealthComponent>(target)
 						.expect("Game logic error: if the player is choosing this creature then it must exist.").0;
 				let damage = state.creatures.get::<AttackComponent>(target)
-						.expect("Game logic error: if the player is choosing this creature then it must exist.").damage;
+						.expect("Game logic error: if the player is choosing this creature then it must exist.")
+						.damage(&state.unanimate);
 
 				let stylized = style(format!("{} has {} hitpoints remaining and does {} damage.",
 				name, health, damage)).with(Color::Cyan);

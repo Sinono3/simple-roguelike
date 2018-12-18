@@ -12,13 +12,13 @@ pub use self::entity_map::EntityMap;
 
 pub type Entity = usize;
 
-#[derive(Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ComponentType {
     Creature,
     Unanimate,
     Shared,
 }
-#[derive(Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum EntityType {
     Creature,
     Unanimate,
