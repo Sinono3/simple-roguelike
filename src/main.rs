@@ -6,23 +6,22 @@ use crossterm::terminal::*;
 use crossterm::style::{Color, style};
 
 mod game_state;
-mod creatures;
 mod commands;
 mod components;
 mod util;
 
-use crate::components::{AttackComponent, AggressionComponent};
+use crate::components::{EntityType, EntityData};
+use crate::components::creature::{AttackComponent, AggressionComponent};
 use crate::game_state::GameState;
-use crate::creatures::CreatureData;
 
 fn main() {
 	let terminal = terminal();
 	terminal.clear(ClearType::All);
 
-	let human_warrior = CreatureData::new("human_warrior", 20)
+	let human_warrior = EntityData::new("human_warrior", 20, EntityType::Creature)
 		.with(AttackComponent { damage: 4 });
 
-	let goblin = CreatureData::new("goblin", 12)
+	let goblin = EntityData::new("goblin", 12, EntityType::Creature)
 		.with(AttackComponent { damage: 2 })
 		.with(AggressionComponent);
 

@@ -1,13 +1,15 @@
-use crossterm::style::{Color, style};
+use crate::components::{Entity, EntityData, EntityMap, ComponentPurpose};
+use crate::components::shared::{NameComponent, HealthComponent};
 
-use crate::components::*;
-use crate::creatures::*;
+use crossterm::style::{Color, style};
+use crate::components::creature::*;
 use crate::commands::{Command, DebugCommand};
 
-pub const PLAYER_ID: CreatureId = 0;
+pub const PLAYER_ID: Entity = 0;
 
 pub struct GameState {
-	pub creatures: CreatureMap
+	pub creatures: EntityMap,
+	pub unanimate: EntityMap,
 }
 
 // just used for determining console output
@@ -26,9 +28,10 @@ impl AttackDirection {
 	}
 }
 impl GameState {
-	pub fn new(player: CreatureData) -> GameState {
+	pub fn new(player: EntityData) -> GameState {
 		let mut state = GameState {
-			creatures: CreatureMap::new()
+			creatures: EntityMap::new(ComponentPurpose::Creature),
+			unanimate: EntityMap::new(ComponentPurpose::Unanimate),
 		};
 		state.creatures.add(player);
 		return state;
@@ -36,22 +39,22 @@ impl GameState {
 	pub fn round(&mut self) -> bool {
 		// systems.
 		player_system(self);
-		crate::components::systems::aggression(self);
+		crate::components::creature::systems::aggression(self);
 
 		true // TODO: player_system can return this, if not then the game will close because of the player's will
 	}
 	// Hits a creature with the inflictor's name and damage.
-	pub fn hit(&mut self, inflictor_id: CreatureId, target_id: CreatureId) {
+	pub fn hit(&mut self, inflictor_id: Entity, target_id: Entity) {
 		assert!(inflictor_id != target_id, "Game logic error: a creature can't attack itself.");
 
-		let (name, damage) = (self.creatures.get::<NameComponent>(inflictor_id)
-							  .expect("Game logic error: Inflictor doesn't have a name.").0.clone(),
-							  self.creatures.get::<AttackComponent>(inflictor_id)
-							  .expect(format!("Game logic error: Inflictor can't attack. {}", inflictor_id).as_str()).damage);
-		let (target_name, target_health) = (self.creatures.get::<NameComponent>(target_id)
-							  .expect("Game logic error: Victim doesn't have a name").0.clone(),
-							  self.creatures.get_mut::<HealthComponent>(target_id)
-			  		  		  .expect("Game logic error: Victim is immortal."));
+		let name = self.creatures.get::<NameComponent>(inflictor_id)
+				.expect("Game logic error: Inflictor doesn't have a name.").0.clone();
+		let damage = self.creatures.get::<AttackComponent>(inflictor_id)
+				.expect(format!("Game logic error: Inflictor can't attack. {}", inflictor_id).as_str()).damage;
+		let target_name = self.creatures.get::<NameComponent>(target_id)
+				.expect("Game logic error: Victim doesn't have a name").0.clone();
+		let target_health = self.creatures.get_mut::<HealthComponent>(target_id)
+				.expect("Game logic error: Victim is immortal.");
 		target_health.damage(damage);
 
 		// english stuff
@@ -85,11 +88,11 @@ impl GameState {
 			self.die(target_id);
 		}
 	}
-	pub fn die(&mut self, dead_id: CreatureId) {
+	pub fn die(&mut self, dead_id: Entity) {
 		let name = self.creatures.remove(dead_id)
 				.expect("Game internal error: creature must have existed")
 				.remove::<NameComponent>()
-				.expect("Creature must have name.").0;
+				.expect("Entity must have name.").0;
 
 		let target_str = if dead_id == PLAYER_ID {
 			style("You died!".to_owned())
@@ -128,7 +131,7 @@ pub fn player_system(state: &mut GameState) {
 	}*/
 
 	// Can unwrap because alive() ASSURES that the returned creatures are alive.
-	for name in state.creatures.alive().iter()
+	for name in state.creatures.existing().iter()
 			.filter(|id| **id != PLAYER_ID)
 			.map(|id| state.creatures.get::<NameComponent>(*id)
 			.expect(format!("Game internal error: creature {} should exist", id).as_str()).0.clone()) {
@@ -187,9 +190,9 @@ status: Show your character's status and remaining enemies."
 				let name = state.creatures.remove(target)
 						.expect("Game internal error: game must have existed")
 						.remove::<NameComponent>()
-						.expect("Creature must have a name.").0;
+						.expect("Entity must have a name.").0;
 
-				println!("Creature '{}' with the id {} has been removed from the game.", name, target);
+				println!("Entity '{}' with the id {} has been removed from the game.", name, target);
 			}
 		}
 		println!("{}", style("Enter another command:")

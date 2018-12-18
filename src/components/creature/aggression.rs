@@ -1,7 +1,12 @@
-use super::super::game_state::{GameState, PLAYER_ID};
+use crate::game_state::{GameState, PLAYER_ID};
 
 #[derive(Clone, Debug)]
 pub struct AggressionComponent;
+
+use crate::components::{Component, ComponentPurpose};
+impl Component for AggressionComponent {
+	fn purpose() -> ComponentPurpose { ComponentPurpose::Creature }
+}
 
 pub fn aggression(state: &mut GameState) {
 	let ids: Vec<usize> = state.creatures.all::<AggressionComponent>()

@@ -1,8 +1,8 @@
 use std::io;
 use crossterm::{style::{Color, style}};
 
+use crate::components::Entity;
 use crate::game_state::{GameState, PLAYER_ID};
-use crate::creatures::CreatureId;
 
 /*pub fn pause() {
     // Read a single byte and discard
@@ -12,14 +12,14 @@ use crate::creatures::CreatureId;
 const DEBUG_MODE_ENABLED: bool = true;
 
 pub enum Command {
-	Attack(CreatureId),
-	Examine(CreatureId),
+	Attack(Entity),
+	Examine(Entity),
 	Status,
     Help,
     Debug(DebugCommand)
 }
 pub enum DebugCommand {
-    Remove(CreatureId)
+    Remove(Entity)
 }
 
 impl Command {
