@@ -1,0 +1,16 @@
+{
+  "name": "warrior",
+  "health": 20,
+  "type": "creature",
+  "components": [
+    { "attack": {
+        "strength": 2,
+        "wielding": null
+      }
+    },
+    { "owner": {
+        "contents": []
+      }
+    }
+  ]
+}

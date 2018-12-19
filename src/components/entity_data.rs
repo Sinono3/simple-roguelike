@@ -1,6 +1,8 @@
-use crate::util::anymap::{Map, any::CloneAny};
+use std::fs::File;
+use std::io::prelude::*;
+
+use anymap::{Map, any::CloneAny};
 use super::{Component, ComponentType, EntityType};
-//use super::shared::{NameComponent, HealthComponent};
 use super::shared::*;
 use super::creature::*;
 use super::unanimate::*;
@@ -24,6 +26,12 @@ impl EntityData {
 		Self::new_empty(p)
 			.with(NameComponent(String::from(name)))
 			.with(HealthComponent(health))
+	}
+	pub fn load_from_json(path: &str) -> EntityData {
+	    let mut file = File::open("./resources/".to_owned() + path).unwrap();
+	    let mut contents = String::new();
+	    file.read_to_string(&mut contents).unwrap();
+	    serde_json::from_str(&contents).unwrap()
 	}
 	pub fn with<T: 'static>(mut self, component: T) -> Self
 			where T: Clone + Component {

@@ -1,8 +1,9 @@
 use crate::components::{Entity, EntityType, EntityMap};
-use crate::components::shared::{NameComponent, HealthComponent};
+use crate::components::unanimate::*;
+use crate::components::creature::*;
+use crate::components::shared::*;
 
 use crossterm::style::{Color, style};
-use crate::components::creature::*;
 use crate::commands::{Command, DebugCommand};
 
 pub const PLAYER_ID: Entity = 0;
@@ -42,7 +43,85 @@ impl GameState {
 
 		true // TODO: player_system can return this, if not then the game will close because of the player's will
 	}
-	// Hits a creature with the inflictor's name and damage.
+	pub fn owns(&mut self, new_owner_id: Entity, new_owner_type: EntityType, owned_id: Entity) {
+		let new_owner_name = match new_owner_type {
+			EntityType::Creature => self.creatures.get::<NameComponent>(new_owner_id).unwrap().0.clone(),
+			EntityType::Unanimate => self.unanimate.get::<NameComponent>(new_owner_id).unwrap().0.clone(),
+		};
+		let owned_name = self.unanimate.get::<NameComponent>(owned_id).unwrap().0.clone();
+
+		if self.unanimate.get::<OwnedComponent>(owned_id).is_some() {
+			let owned_before = self.unanimate.get::<OwnedComponent>(owned_id).unwrap().clone();
+
+			match owned_before.owner_type {
+				EntityType::Creature => {
+					println!("{} stole {} from {}!",
+							if new_owner_id == PLAYER_ID {
+								"You".to_owned()
+							} else {
+								new_owner_name
+							},
+							owned_name,
+							if owned_before.owner == PLAYER_ID {
+								"you".to_owned()
+							} else {
+								self.creatures.get::<NameComponent>(owned_before.owner).unwrap().0.clone()
+							}
+					);
+
+					self.creatures.get_mut::<OwnerComponent>(owned_before.owner)
+				}
+				EntityType::Unanimate => {
+					println!("{} grabbed {} from {}.",
+							if new_owner_id == PLAYER_ID {
+								"You".to_owned()
+							} else {
+								new_owner_name
+							},
+							owned_name,
+							self.unanimate.get::<NameComponent>(owned_before.owner).unwrap().0.clone()
+					);
+
+					self.unanimate.get_mut::<OwnerComponent>(owned_before.owner)
+				}
+			}.expect("New owner MUST have the Owner component.").contents.push(owned_id);
+		} else {
+			match new_owner_type {
+				EntityType::Creature => {
+					println!("{} taken the {}.", if new_owner_id == PLAYER_ID {
+								"You have".to_owned()
+							} else {
+								self.creatures.get::<NameComponent>(new_owner_id).unwrap().0.clone() + " has"
+							},
+							owned_name
+					);
+					self.creatures.get_mut::<OwnerComponent>(new_owner_id)
+				}
+				EntityType::Unanimate => {
+					self.unanimate.get_mut::<OwnerComponent>(new_owner_id)
+				}
+			}.expect("New owner MUST have the Owner component.").contents.push(owned_id);
+
+			self.unanimate.set(owned_id, Some(OwnedComponent {
+				owner: 0,
+				owner_type: EntityType::Creature,
+			}));
+		};
+		let owned = self.unanimate.get_mut::<OwnedComponent>(owned_id).unwrap();
+		owned.owner = new_owner_id;
+		owned.owner_type = new_owner_type;
+	}
+	pub fn wields(&mut self, wielder_id: Entity, weapon_id: Entity) {
+		if self.creatures.get::<OwnerComponent>(wielder_id).unwrap().contents.contains(&weapon_id) {
+			if self.unanimate.get::<WieldableComponent>(weapon_id).is_some() {
+				self.creatures.get_mut::<AttackComponent>(wielder_id).unwrap().wielding = Some(weapon_id);
+			} else {
+				panic!("unanimate {} is not wieldable", weapon_id);
+			}
+		} else {
+			panic!("creature {} doesn't own unanimate {}", wielder_id, weapon_id);
+		}
+	}
 	pub fn hit(&mut self, inflictor_id: Entity, target_id: Entity) {
 		assert!(inflictor_id != target_id, "Game logic error: a creature can't attack itself.");
 

@@ -1,0 +1,20 @@
+{
+  "name": "merchant",
+  "health": 38,
+  "type": "creature",
+  "components": [
+    { "attack": {
+        "strength": 1,
+        "wielding": null
+      }
+    },
+    { "owner": {
+        "contents": []
+      }
+    },
+    { "neutral": {
+        "target": null
+      }
+    }
+  ]
+}

@@ -1,5 +1,3 @@
-use serde::Deserialize;
-
 #[derive(Clone, Debug, Deserialize)]
 pub struct OwnerComponent {
 	pub contents: Vec<crate::components::Entity>

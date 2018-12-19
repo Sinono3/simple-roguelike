@@ -1,11 +1,15 @@
 {
   "name": "goblin",
   "health": 12,
-  "type": "Creature",
+  "type": "creature",
   "components": [
     { "attack": {
         "strength": 1,
         "wielding": null
+      }
+    },
+    { "owner": {
+        "contents": []
       }
     },
     { "aggressive": null }

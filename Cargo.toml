@@ -10,3 +10,4 @@ multi_mut = "*"
 serde = "*"
 serde_derive = "*"
 serde_json = "*"
+anymap = { path = "./anymap" }

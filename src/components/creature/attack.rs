@@ -1,6 +1,5 @@
 use crate::components::unanimate::WieldableComponent;
 use crate::components::{Entity, EntityMap, Component, ComponentType};
-use serde::Deserialize;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct AttackComponent {

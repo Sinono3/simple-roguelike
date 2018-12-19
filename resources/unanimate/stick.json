@@ -1,0 +1,11 @@
+{
+  "name": "stick",
+  "health": 4,
+  "type": "unanimate",
+  "components": [
+    { "wieldable": {
+        "damage": 1
+      }
+    }
+  ]
+}

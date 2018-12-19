@@ -1,7 +1,5 @@
 use crate::components::{Component, ComponentType};
 
-use serde::Deserialize;
-
 #[derive(Clone, Debug, Deserialize)]
 pub struct SalableComponent {
 	pub worth: i32
@@ -11,6 +9,6 @@ impl Component for SalableComponent {
 }
 impl SalableComponent {
 	pub fn apply_interest(&self, interest: i32) -> i32 {
-		self.worth * (100 / interest)
+		self.worth * (interest / 100)
 	}
 }

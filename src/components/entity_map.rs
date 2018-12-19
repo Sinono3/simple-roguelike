@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use crate::components::{EntityType, ComponentMap, Entity, EntityData,
 		EntityAllocator, shared::*, creature::*, unanimate::*};
-use crate::util::anymap::AnyMap;
+use anymap::AnyMap;
 
 const ANYMAP_ERROR: &str = "Game logic error: Trying to add a different purpose entity to map.";
 

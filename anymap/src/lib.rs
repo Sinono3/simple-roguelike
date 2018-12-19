@@ -1,13 +1,14 @@
-//! This module provides the `AnyMap` type, a safe and convenient store for one value of each type.
+//! This crate provides the `AnyMap` type, a safe and convenient store for one value of each type.
 
 #![warn(missing_docs, unused_results)]
-#![allow(dead_code)]
+
+extern crate multi_mut;
 
 use std::any::TypeId;
 use std::marker::PhantomData;
 
-use self::raw::RawMap;
-use self::any::{UncheckedAnyExt, IntoBox, Any};
+use raw::RawMap;
+use any::{UncheckedAnyExt, IntoBox, Any};
 
 macro_rules! impl_common_methods {
     (
@@ -312,8 +313,8 @@ impl<'a, A: ?Sized + UncheckedAnyExt, V: IntoBox<A>> VacantEntry<'a, A, V> {
 
 #[cfg(test)]
 mod tests {
-    use super::{Map, AnyMap, Entry};
-    use super::any::{Any, CloneAny};
+    use {Map, AnyMap, Entry};
+    use any::{Any, CloneAny};
 
     #[derive(Clone, Debug, PartialEq)] struct A(i32);
     #[derive(Clone, Debug, PartialEq)] struct B(i32);

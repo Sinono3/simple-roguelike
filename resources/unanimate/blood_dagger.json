@@ -1,0 +1,15 @@
+{
+  "name": "blood_dagger",
+  "health": 90,
+  "type": "unanimate",
+  "components": [
+    { "wieldable": {
+        "damage": 8
+      }
+    },
+    { "salable": {
+        "worth": 470
+      }
+    }
+  ]
+}

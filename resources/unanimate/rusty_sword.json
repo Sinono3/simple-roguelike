@@ -1,0 +1,15 @@
+{
+  "name": "rusty_sword",
+  "health": 18,
+  "type": "unanimate",
+  "components": [
+    { "wieldable": {
+        "damage": 1
+      }
+    },
+    { "salable": {
+        "worth": 10
+      }
+    }
+  ]
+}
