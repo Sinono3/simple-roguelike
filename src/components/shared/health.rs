@@ -1,4 +1,6 @@
-#[derive(Clone, Debug)]
+use serde::Deserialize;
+
+#[derive(Clone, Debug, Deserialize)]
 pub struct HealthComponent(pub i32);
 
 use crate::components::{Component, ComponentType};

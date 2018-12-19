@@ -1,6 +1,8 @@
 use crate::components::{Component, ComponentType};
 
-#[derive(Clone, Debug)]
+use serde::Deserialize;
+
+#[derive(Clone, Debug, Deserialize)]
 pub struct SalableComponent {
 	pub worth: i32
 }

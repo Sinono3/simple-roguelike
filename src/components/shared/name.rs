@@ -1,4 +1,6 @@
-#[derive(Clone, Debug)]
+use serde::Deserialize;
+
+#[derive(Clone, Debug, Deserialize)]
 pub struct NameComponent(pub String);
 
 use crate::components::{Component, ComponentType};

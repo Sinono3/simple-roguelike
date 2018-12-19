@@ -18,7 +18,7 @@ pub enum ComponentType {
     Unanimate,
     Shared,
 }
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub enum EntityType {
     Creature,
     Unanimate,

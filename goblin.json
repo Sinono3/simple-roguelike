@@ -1,0 +1,12 @@
+{
+  "name": "goblin",
+  "health": 12,
+  "type": "Creature",
+  "components": [
+    {"attack": {
+      "strength": 1,
+      "wielding": 2
+    }},
+    {"aggressive": null}
+  ]
+}

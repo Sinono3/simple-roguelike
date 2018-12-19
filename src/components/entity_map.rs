@@ -28,7 +28,7 @@ impl EntityMap {
 		match entity_map.purpose {
 			EntityType::Creature => {
 				entity_map.components.insert::<ComponentMap<AttackComponent>>(Vec::new());
-				entity_map.components.insert::<ComponentMap<AggressionComponent>>(Vec::new());
+				entity_map.components.insert::<ComponentMap<AggressiveComponent>>(Vec::new());
 				entity_map.components.insert::<ComponentMap<NeutralComponent>>(Vec::new());
 			}
 			EntityType::Unanimate => {
@@ -69,7 +69,7 @@ impl EntityMap {
 		match self.purpose {
 			EntityType::Creature => {
 				self.set::<AttackComponent>(id, entity_data.remove::<AttackComponent>());
-				self.set::<AggressionComponent>(id, entity_data.remove::<AggressionComponent>());
+				self.set::<AggressiveComponent>(id, entity_data.remove::<AggressiveComponent>());
 				self.set::<NeutralComponent>(id, entity_data.remove::<NeutralComponent>());
 			}
 			EntityType::Unanimate => {
@@ -90,7 +90,7 @@ impl EntityMap {
 		match self.purpose {
 			EntityType::Creature => {
 				data.add_option(self.remove_component::<AttackComponent>(id));
-				data.add_option(self.remove_component::<AggressionComponent>(id));
+				data.add_option(self.remove_component::<AggressiveComponent>(id));
 				data.add_option(self.remove_component::<NeutralComponent>(id));
 			}
 			EntityType::Unanimate => {
@@ -175,7 +175,7 @@ fn push_none(map: &mut EntityMap) -> Entity {
 	match map.purpose {
 		EntityType::Creature => {
 			map.all_mut::<AttackComponent>().push(None);
-			map.all_mut::<AggressionComponent>().push(None);
+			map.all_mut::<AggressiveComponent>().push(None);
 			map.all_mut::<NeutralComponent>().push(None);
 		}
 		EntityType::Unanimate => {

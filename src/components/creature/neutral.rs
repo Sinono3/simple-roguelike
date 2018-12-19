@@ -1,7 +1,8 @@
 use crate::game_state::{GameState, PLAYER_ID};
 use crate::components::{Entity, Component, ComponentType};
+use serde::Deserialize;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct NeutralComponent {
     target: Option<Entity>
 }

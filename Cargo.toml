@@ -7,3 +7,6 @@ edition = "2018"
 [dependencies]
 crossterm = "0.5.0"
 multi_mut = "*"
+serde = "*"
+serde_derive = "*"
+serde_json = "*"

@@ -2,6 +2,11 @@
 extern crate crossterm;
 extern crate multi_mut;
 
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde_json;
+
 use crossterm::terminal::*;
 use crossterm::style::{Color, style};
 
@@ -11,7 +16,7 @@ mod components;
 mod util;
 
 use crate::components::{EntityType, EntityData};
-use crate::components::creature::{NeutralComponent, AttackComponent, AggressionComponent};
+use crate::components::creature::{NeutralComponent, AttackComponent, AggressiveComponent};
 use crate::components::shared::{OwnerComponent};
 use crate::components::unanimate::*;
 use crate::game_state::GameState;
@@ -23,11 +28,6 @@ fn main() {
 	let mut state = GameState::new();
 
 	// items
-	let blood_dagger = EntityData::new("blood_dagger", 90, EntityType::Unanimate)
-			.with(OwnedComponent { owner: 3, entity_type: EntityType::Creature })
-			.with(WieldableComponent { damage: 8 })
-			.with(SalableComponent { worth: 470 });
-
 	let rusty_sword = EntityData::new("rusty_sword", 18, EntityType::Unanimate)
 			.with(OwnedComponent { owner: 0, entity_type: EntityType::Creature })
 			.with(WieldableComponent { damage: 2 })
@@ -37,15 +37,16 @@ fn main() {
 			.with(OwnedComponent { owner: 1, entity_type: EntityType::Creature })
 			.with(WieldableComponent { damage: 2 });
 
-	/*let stick2 = stick.clone()
-			.with(OwnedComponent { owner: 2, entity_type: EntityType::Creature });*/
+	let blood_dagger = EntityData::new("blood_dagger", 90, EntityType::Unanimate)
+			.with(OwnedComponent { owner: 3, entity_type: EntityType::Creature })
+			.with(WieldableComponent { damage: 8 })
+			.with(SalableComponent { worth: 470 });
 
 	state.unanimate.add(rusty_sword);
 	state.unanimate.add(stick);
 	state.unanimate.add(blood_dagger);
 
 	// creatures
-
 	let human_warrior = EntityData::new("human_warrior", 20, EntityType::Creature)
 			.with(AttackComponent {
 				strength: 2,
@@ -55,13 +56,21 @@ fn main() {
 				contents: vec![0],
 			});
 
-	let goblin = EntityData::new("goblin", 12, EntityType::Creature)
+	use std::fs::File;
+	use std::io::prelude::*;
+
+    let mut file = File::open("./goblin.json").unwrap();
+    let mut contents = String::new();
+    file.read_to_string(&mut contents).unwrap();
+
+	/*let goblin = EntityData::new("goblin", 12, EntityType::Creature)
 			.with(AttackComponent { strength: 1, wielding: None })
-			.with(AggressionComponent);
+			.with(AggressiveComponent);*/
+	let goblin: EntityData = serde_json::from_str(&contents).unwrap();
 
 	let merchant = EntityData::new("merchant", 38, EntityType::Creature)
-				.with(AttackComponent { strength: 1, wielding: Some(2) })
-				.with(NeutralComponent::new());
+			.with(AttackComponent { strength: 1, wielding: Some(2) })
+			.with(NeutralComponent::new());
 
 	state.creatures.add(human_warrior);
 	state.creatures.add(goblin.clone());
@@ -74,10 +83,10 @@ fn main() {
 	println!("{}", line);
 
 	println!("{}", style("\n## You're the only human warrior left and must defeat all enemies!\n")
-				   .with(Color::Green));
+			.with(Color::Green));
 
 	println!("{}", style("Type 'help' to see the available commands.")
-				   .with(Color::DarkGreen));
+			.with(Color::DarkGreen));
 
 	while state.round() {
 		//playing

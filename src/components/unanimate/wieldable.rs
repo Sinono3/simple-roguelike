@@ -1,6 +1,8 @@
 use crate::components::{Component, ComponentType};
 
-#[derive(Clone, Debug)]
+use serde::Deserialize;
+
+#[derive(Clone, Debug, Deserialize)]
 pub struct WieldableComponent {
 	pub damage: i32
 }

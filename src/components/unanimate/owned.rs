@@ -1,6 +1,7 @@
 use crate::components::{Entity, EntityType, Component, ComponentType};
+use serde::de::Deserialize;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct OwnedComponent {
 	pub owner: Entity,
 	pub entity_type: EntityType

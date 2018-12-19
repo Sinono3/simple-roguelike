@@ -1,7 +1,8 @@
 use crate::components::unanimate::WieldableComponent;
 use crate::components::{Entity, EntityMap, Component, ComponentType};
+use serde::Deserialize;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct AttackComponent {
 	pub strength: i32,
 	pub wielding: Option<Entity>
