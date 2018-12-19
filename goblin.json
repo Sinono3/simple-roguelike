@@ -3,10 +3,11 @@
   "health": 12,
   "type": "Creature",
   "components": [
-    {"attack": {
-      "strength": 1,
-      "wielding": null
-    }},
-    {"aggressive": null}
+    { "attack": {
+        "strength": 1,
+        "wielding": null
+      }
+    },
+    { "aggressive": null }
   ]
 }
