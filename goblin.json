@@ -5,7 +5,7 @@
   "components": [
     {"attack": {
       "strength": 1,
-      "wielding": 2
+      "wielding": null
     }},
     {"aggressive": null}
   ]
