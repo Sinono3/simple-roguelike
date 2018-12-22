@@ -57,7 +57,7 @@ fn main() {
 		.with(Health(20))
 		.with(Attack {
 			strength: 2,
-			wielding: Some(rusty_sword)
+			wielding: None
 		})
 		.with(Playable)
 		.build();
@@ -79,19 +79,30 @@ fn main() {
 		.with(Health(38))
 		.with(Attack {
 			strength: 1,
-			wielding: Some(blood_sword)
+			wielding: None
 		})
 		.with(NeutralBehaviour::default())
 		.build();
 
 	introduction();
 
+	// owning example (very simple)
 	world.exec(|mut data: WriteStorage<Owned>| {
 		// TODO: Better error handling.
 		data.insert(rusty_sword, Owned(warrior));
 		data.insert(blood_sword, Owned(merchant));
 	});
 
+	// auto-wielding example.
+	world.exec(|(mut att, own): (WriteStorage<Attack>, ReadStorage<Owned>)| {
+		// TODO: Better error handling.
+		if let Some(owned) = own.get(rusty_sword) {
+			att.get_mut(owned.0).unwrap().wielding = Some(rusty_sword);
+		}
+		if let Some(owned) = own.get(blood_sword) {
+			att.get_mut(owned.0).unwrap().wielding = Some(rusty_sword);
+		}
+	});
 	use specs::RunNow;
 
 	let mut play = PlayabilitySystem;
