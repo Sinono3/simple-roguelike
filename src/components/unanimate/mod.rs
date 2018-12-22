@@ -3,10 +3,6 @@ pub mod owned;
 pub mod salable;
 pub mod wieldable;
 
-pub mod systems {
-
-}
-
-pub use self::owned::OwnedComponent;
-pub use self::salable::SalableComponent;
-pub use self::wieldable::WieldableComponent;
+pub use self::owned::Owned;
+pub use self::salable::Salable;
+pub use self::wieldable::Wieldable;

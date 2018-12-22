@@ -1,12 +1,15 @@
 mod attack;
 mod aggressive;
 mod neutral;
-// All systems will be in this module.
-pub mod systems {
-	pub use super::aggressive::aggressive;
-	pub use super::neutral::neutral;
-}
+mod playable;
 
-pub use self::attack::AttackComponent;
-pub use self::aggressive::AggressiveComponent;
-pub use self::neutral::NeutralComponent;
+pub use self::attack::Attack;
+
+pub use self::aggressive::AggressiveBehaviour;
+pub use self::aggressive::AggressionSystem;
+
+pub use self::neutral::NeutralBehaviour;
+pub use self::neutral::NeutralitySystem;
+
+pub use self::playable::Playable;
+pub use self::playable::PlayabilitySystem;

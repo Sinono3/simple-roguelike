@@ -1,4 +1,4 @@
-use crate::components::{Entity, EntityType, EntityMap};
+/*use crate::components::{Entity, EntityType, EntityMap};
 use crate::components::unanimate::*;
 use crate::components::creature::*;
 use crate::components::shared::*;
@@ -276,3 +276,4 @@ status: Show your character's status and remaining enemies."
 					   .with(Color::DarkGreen));
 	}
 }
+*/

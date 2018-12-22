@@ -1,19 +1,18 @@
-#[derive(Clone, Debug, Deserialize)]
-pub struct HealthComponent(pub i32);
+use specs::prelude::*;
 
-use crate::components::{Component, ComponentType};
-impl Component for HealthComponent {
-	fn purpose() -> ComponentType { ComponentType::Shared }
+#[derive(Component, Debug, Default)]
+#[storage(VecStorage)]
+pub struct Health(pub i32);
+
+impl Health {
+    pub fn is_alive(&self) -> bool {
+        self.0 > 0
+    }
+    pub fn has_died(&self) -> bool {
+        !self.is_alive()
+    }
 }
 
-#[allow(dead_code)]
-impl HealthComponent {
-	pub fn heal(&mut self, healing: i32) -> i32 {
-		self.0 += healing;
-		self.0
-	}
-	pub fn damage(&mut self, damage: i32) -> i32 {
-		self.0 -= damage;
-		self.0
-	}
-}
+#[derive(Component, Debug, Default)]
+#[storage(DenseVecStorage)]
+pub struct Hit(pub Option<Entity>);

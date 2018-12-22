@@ -1,8 +1,5 @@
-use std::io;
+/*use std::io;
 use crossterm::{style::{Color, style}};
-
-use crate::components::Entity;
-use crate::game_state::{GameState, PLAYER_ID};
 
 /*pub fn pause() {
     // Read a single byte and discard
@@ -96,3 +93,4 @@ impl Command {
 		}
 	}
 }
+*/

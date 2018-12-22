@@ -1,11 +1,5 @@
-use crate::components::{Entity, EntityType, Component, ComponentType};
+use specs::{Entity, Component, DenseVecStorage};
 
-#[derive(Clone, Debug, Deserialize)]
-pub struct OwnedComponent {
-	pub owner: Entity,
-	pub owner_type: EntityType
-}
-
-impl Component for OwnedComponent {
-	fn purpose() -> ComponentType { ComponentType::Unanimate }
-}
+#[derive(Component, Debug)] // Deserialize, Serialize
+#[storage(DenseVecStorage)]
+pub struct Owned(pub Entity);

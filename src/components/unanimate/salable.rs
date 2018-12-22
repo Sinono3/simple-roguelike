@@ -1,14 +1,7 @@
-use crate::components::{Component, ComponentType};
+use specs::{Component, DenseVecStorage};
 
-#[derive(Clone, Debug, Deserialize)]
-pub struct SalableComponent {
+#[derive(Component, Debug)] // Deserialize, Serialize
+#[storage(DenseVecStorage)]
+pub struct Salable {
 	pub worth: i32
-}
-impl Component for SalableComponent {
-	fn purpose() -> ComponentType { ComponentType::Unanimate }
-}
-impl SalableComponent {
-	pub fn apply_interest(&self, interest: i32) -> i32 {
-		self.worth * (interest / 100)
-	}
 }

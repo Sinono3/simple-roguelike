@@ -1,21 +1,31 @@
-use crate::components::unanimate::WieldableComponent;
-use crate::components::{Entity, EntityMap, Component, ComponentType};
+use specs::prelude::*;
 
-#[derive(Clone, Debug, Deserialize)]
-pub struct AttackComponent {
+use crate::components::unanimate::Wieldable;
+
+#[derive(Component, Debug, Clone)]
+#[storage(DenseVecStorage)]
+pub struct Attack {
 	pub strength: i32,
 	pub wielding: Option<Entity>
 }
 
-impl Component for AttackComponent {
-	fn purpose() -> ComponentType { ComponentType::Creature }
-}
-impl AttackComponent {
-	pub fn damage(&self, unanimate: &EntityMap) -> i32 {
-		if let Some(e) = self.wielding {
-			self.strength + unanimate.get::<WieldableComponent>(e).unwrap().damage
-		} else {
-			self.strength
+impl Attack {
+	pub fn damage(&self, wieldable_s: &ReadStorage<Wieldable>) -> i32 {
+		if let Some(wield_id) = self.wielding {
+			if let Some(wieldable) = wieldable_s.get(wield_id) {
+				return self.strength + wieldable.damage;
+			}
+			// if they're here they no longer have their weapon... zoinks!
 		}
+		self.strength
+	}
+	pub fn damage_mut(&self, wieldable_s: &WriteStorage<Wieldable>) -> i32 {
+		if let Some(wield_id) = self.wielding {
+			if let Some(wieldable) = wieldable_s.get(wield_id) {
+				return self.strength + wieldable.damage;
+			}
+			// if they're here they no longer have their weapon... zoinks!
+		}
+		self.strength
 	}
 }

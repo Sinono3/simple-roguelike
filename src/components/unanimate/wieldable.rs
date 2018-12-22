@@ -1,10 +1,7 @@
-use crate::components::{Component, ComponentType};
+use specs::{Component, DenseVecStorage};
 
-#[derive(Clone, Debug, Deserialize)]
-pub struct WieldableComponent {
+#[derive(Component, Debug, Deserialize, Serialize)]
+#[storage(DenseVecStorage)]
+pub struct Wieldable {
 	pub damage: i32
-}
-
-impl Component for WieldableComponent {
-	fn purpose() -> ComponentType { ComponentType::Unanimate }
 }
