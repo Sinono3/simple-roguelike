@@ -2,7 +2,7 @@ use specs::prelude::*;
 
 use crate::components::creature::Attack;
 use crate::components::shared::{Name, Health, Hit};
-use crate::components::unanimate::Wieldable;
+use crate::components::unanimate::{Wieldable, Owned};
 
 #[derive(Component, Debug, Default, Deserialize, Serialize)]
 #[storage(NullStorage)]
@@ -18,17 +18,18 @@ impl<'a> System<'a> for PlayabilitySystem {
         WriteStorage<'a, Attack>,
         WriteStorage<'a, Wieldable>,
         WriteStorage<'a, Hit>,
+        WriteStorage<'a, Owned>,
     );
 
-    fn run(&mut self, (entities, playable_s, name_s, mut health_s, attack_s, wieldable_s, mut hit_s): Self::SystemData) {
-        use specs::Join;
-
+    fn run(&mut self, (entities, playable_s, name_s, mut health_s, mut attack_s, wieldable_s, mut hit_s, mut owned_s): Self::SystemData) {
         enum Command {
             Hit(Entity),
+            Take(Entity),
             Status,
         }
 
-        for (entity, _, name, attack) in (&entities, &playable_s, &name_s, &attack_s).join() {
+        use specs::Join;
+        for (entity, _, name) in (&entities, &playable_s, &name_s).join() {
             let command =
             {
                 use std::io;
@@ -43,7 +44,6 @@ impl<'a> System<'a> for PlayabilitySystem {
 
                     match parts[0] {
                         "attack" | "hit" if parts.len() > 1 => {
-
                             if let Some(f) = find(&name_s, &entities, parts[1]) {
                                 break Command::Hit(f);
                             } else {
@@ -51,7 +51,18 @@ impl<'a> System<'a> for PlayabilitySystem {
                             }
                         }
                         "attack" | "hit" => println!("Please write a target. ex: goblin"),
+
+                        "take" | "steal" => {
+                            if let Some(item) = find(&name_s, &entities, parts[1]) {
+                                break Command::Take(item);
+                            } else {
+                                println!("Please write a correct target. ex: golden-ring");
+                            }
+                        }
+                        "take" | "steal" => println!("Please write an item. ex: golden-ring"),
+
                         "status" => break Command::Status,
+
                         _ => println!("Please write an existing command."),
                     }
 
@@ -66,7 +77,8 @@ impl<'a> System<'a> for PlayabilitySystem {
                         health_s.get_mut(target).unwrap()
                     )};
 
-                    let damage = attack.damage_mut(&wieldable_s);
+
+                    let damage = attack_s.get(entity).unwrap().damage(&wieldable_s);
                     target_health.0 -= damage;
 
                     // TODO: Better error handling.
@@ -74,7 +86,7 @@ impl<'a> System<'a> for PlayabilitySystem {
 
                     println!
                     (
-                        "{} attacked {} for {} damage!",
+                        "{} hit {} for {} damage!",
                         name.get(),
                         target_name,
                         damage
@@ -97,6 +109,31 @@ impl<'a> System<'a> for PlayabilitySystem {
                         );
                     }
                 }
+                Command::Take(e) => {
+                    if let Some(owned) = owned_s.get_mut(e) {
+                        let owner_name = name_s.get(owned.0).unwrap().get();
+
+                        // temporary!
+                        if let Some(att) = attack_s.get_mut(owned.0) {
+                            att.wielding = None;
+                        }
+
+                        owned.0 = entity;
+
+                        println!("{} has stolen {} from {}!",
+                            name.get(),
+                            name_s.get(e).unwrap().get(),
+                            owner_name
+                        );
+                        // call maintain.
+                    } else {
+                        println!("{} has taken {}.",
+                            name.get(),
+                            name_s.get(e).unwrap().get()
+                        );
+                        owned_s.insert(e, Owned(entity));
+                    }
+                }
                 Command::Status => {}
             }
         }
@@ -106,7 +143,7 @@ impl<'a> System<'a> for PlayabilitySystem {
 fn find(name_s: &ReadStorage<Name>, entities: &Entities, name: &str) -> Option<Entity> {
     let mut found = None;
     for ent in entities.join() {
-        if name_s.get(ent).unwrap().get() == name {
+        if name_s.get(ent).unwrap().raw() == name {
             found = Some(ent);
         }
     }

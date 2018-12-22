@@ -13,7 +13,6 @@ use crossterm::style::{Color, style};
 
 use specs::prelude::*;
 
-mod commands;
 mod components;
 
 use crate::components::creature::*;
@@ -37,7 +36,7 @@ fn main() {
 	world.register::<Playable>();
 
 	let rusty_sword = world.create_entity()
-		.with(Name::new("rusty_sword"))
+		.with(Name::new("rusty-sword", false))
 		.with(Health(18))
 		.with(Wieldable {
 			damage: 2
@@ -45,7 +44,7 @@ fn main() {
 		.build();
 
 	let blood_sword = world.create_entity()
-		.with(Name::new("blood_sword"))
+		.with(Name::new("the-blood-sword", true))
 		.with(Health(90))
 		.with(Wieldable {
 			damage: 8
@@ -53,7 +52,7 @@ fn main() {
 		.build();
 
 	let warrior = world.create_entity()
-		.with(Name::new("Wigfrid"))
+		.with(Name::new("Wigfrid", true))
 		.with(Health(20))
 		.with(Attack {
 			strength: 2,
@@ -64,7 +63,7 @@ fn main() {
 
 	let goblin = world
 		.create_entity()
-		.with(Name::new("goblin"))
+		.with(Name::new("goblin", false))
 		.with(Health(12))
 		.with(Attack {
 			strength: 1,
@@ -75,7 +74,7 @@ fn main() {
 
 	let merchant = world
 		.create_entity()
-		.with(Name::new("merchant"))
+		.with(Name::new("merchant", false))
 		.with(Health(38))
 		.with(Attack {
 			strength: 1,
@@ -92,22 +91,25 @@ fn main() {
 		data.insert(rusty_sword, Owned(warrior));
 		data.insert(blood_sword, Owned(merchant));
 	});
+	// call maintain.
 
 	// auto-wielding example.
 	world.exec(|(mut att, own): (WriteStorage<Attack>, ReadStorage<Owned>)| {
-		// TODO: Better error handling.
 		if let Some(owned) = own.get(rusty_sword) {
 			att.get_mut(owned.0).unwrap().wielding = Some(rusty_sword);
 		}
 		if let Some(owned) = own.get(blood_sword) {
-			att.get_mut(owned.0).unwrap().wielding = Some(rusty_sword);
+			att.get_mut(owned.0).unwrap().wielding = Some(blood_sword);
 		}
 	});
+	// call maintain.
+
 	use specs::RunNow;
 
 	let mut play = PlayabilitySystem;
 	let mut aggro = AggressionSystem;
 	let mut neutral = NeutralitySystem;
+	// TODO: World and stolen maintain system.
 
 	loop {
 		play.run_now(&world.res);

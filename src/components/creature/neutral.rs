@@ -43,7 +43,7 @@ impl<'a> System<'a> for NeutralitySystem {
 
                 println!
                 (
-                    "{} attacked {} for {} damage!",
+                    "{} hit {} for {} damage!",
                     name.get(),
                     target_name,
                     damage
