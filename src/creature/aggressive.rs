@@ -1,10 +1,10 @@
 use specs::prelude::*;
 
-use crate::components::creature::{Playable, Attack};
-use crate::components::shared::*;
-use crate::components::unanimate::Wieldable;
+use crate::creature::{Playable, Attack};
+use crate::shared::*;
+use crate::unanimate::Wieldable;
 
-#[derive(Component, Debug, Default, Deserialize, Serialize)]
+#[derive(Component, Debug, Default, Clone, Deserialize, Serialize)]
 #[storage(NullStorage)]
 pub struct AggressiveBehaviour;
 
@@ -18,7 +18,7 @@ impl<'a> System<'a> for AggressionSystem {
         ReadStorage<'a, Attack>,
         ReadStorage<'a, Wieldable>,
         WriteStorage<'a, Health>,
-        WriteStorage<'a, Hit>,
+        WriteStorage<'a, Affected>,
     );
 
     fn run(&mut self, (entities, player_s, name_s, aggressive_s, attack_s, wieldable_s, mut health_s, mut hit_s): Self::SystemData) {
@@ -35,7 +35,7 @@ impl<'a> System<'a> for AggressionSystem {
             let damage = attack.damage(&wieldable_s);
             target_health.0 -= damage;
             // TODO: Better error handling.
-            hit_s.insert(target, Hit(Some(entity)));
+            hit_s.insert(target, Affected(entity));
 
             println!
             (

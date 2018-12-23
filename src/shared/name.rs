@@ -1,13 +1,13 @@
 use specs::{Component, VecStorage};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 enum NameKind {
     Unique,
     NonUnique,
         //Repetition(bool, i32),
 }
 
-#[derive(Component, Debug, Deserialize, Serialize)]
+#[derive(Component, Debug, Clone, Deserialize, Serialize)]
 #[storage(VecStorage)]
 // First member represents raw name and the bool represents if it has been presented before.
 pub struct Name {

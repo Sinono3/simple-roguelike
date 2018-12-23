@@ -1,14 +1,25 @@
+use serde::{Serialize, Deserialize};
 use specs::prelude::*;
+use specs::error::NoError;
+use specs::saveload::{Marker, ConvertSaveload};
 
-use crate::components::creature::Attack;
-use crate::components::shared::{Name, Health, Hit};
-use crate::components::unanimate::Wieldable;
+use crate::creature::Attack;
+use crate::shared::{Name, Health, Affected};
+use crate::unanimate::Wieldable;
 
-#[derive(Component, Debug, Default)] // Deserialize, Serialize
+#[derive(Component, Debug, Clone)]
 #[storage(DenseVecStorage)]
 pub struct NeutralBehaviour {
     target: Option<Entity>
 }
+impl NeutralBehaviour {
+    pub fn new() -> Self {
+        NeutralBehaviour {
+            target: None
+        }
+    }
+}
+
 pub struct NeutralitySystem;
 impl<'a> System<'a> for NeutralitySystem {
     type SystemData = (
@@ -16,7 +27,7 @@ impl<'a> System<'a> for NeutralitySystem {
         WriteStorage<'a, NeutralBehaviour>,
         ReadStorage<'a, Name>,
         WriteStorage<'a, Health>,
-        WriteStorage<'a, Hit>,
+        WriteStorage<'a, Affected>,
         ReadStorage<'a, Attack>,
         ReadStorage<'a, Wieldable>
     );
@@ -26,7 +37,7 @@ impl<'a> System<'a> for NeutralitySystem {
 
         for (entity, mut neutral, name, attack) in (&entities, &mut neutral_s, &name_s, &attack_s).join() {
             if let Some(hit) = hit_s.get(entity) {
-                neutral.target = hit.0;
+                neutral.target = Some(hit.0);
             }
 
             if let Some(target) = neutral.target {
@@ -39,7 +50,7 @@ impl<'a> System<'a> for NeutralitySystem {
                 let damage = attack.damage(&wieldable_s);
                 target_health.0 -= damage;
                 // TODO: Better error handling.
-                hit_s.insert(target, Hit(Some(entity)));
+                hit_s.insert(target, Affected(entity));
 
                 println!
                 (
@@ -66,6 +77,50 @@ impl<'a> System<'a> for NeutralitySystem {
                     );
                 }
             }
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct NeutralData<M> {
+    target: Option<M>
+}
+impl<M: Marker + Serialize> ConvertSaveload<M> for NeutralBehaviour
+    where for<'de> M: Deserialize<'de>,
+{
+    type Data = NeutralData<M>;
+    type Error = NoError;
+
+    fn convert_into<F>(&self, mut ids: F) -> Result<Self::Data, Self::Error>
+    where
+        F: FnMut(Entity) -> Option<M>
+    {
+        if let Some(target) = self.target {
+            let marker = ids(target).unwrap();
+
+            Ok(NeutralData {
+                target: Some(marker)
+            })
+        } else {
+            Ok(NeutralData {
+                target: None
+            })
+        }
+    }
+
+    fn convert_from<F>(data: Self::Data, mut ids: F) -> Result<Self, Self::Error>
+    where
+        F: FnMut(M) -> Option<Entity>
+    {
+        if let Some(target) = data.target {
+            let entity = ids(target).unwrap();
+            Ok(NeutralBehaviour {
+                target: Some(entity)
+            })
+        } else {
+            Ok(NeutralBehaviour {
+                target: None
+            })
         }
     }
 }
