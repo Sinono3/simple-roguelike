@@ -23,7 +23,7 @@ impl<'a> System<'a> for AggressionSystem {
         WriteStorage<'a, Affected>,
     );
 
-    fn run(&mut self, (entities, player_s, name_s, aggressive_s, attack_s, wieldable_s, mut health_s, mut hit_s): Self::SystemData) {
+    fn run(&mut self, (entities, player_s, name_s, aggressive_s, attack_s, wieldable_s, mut health_s, mut affected_s): Self::SystemData) {
         use specs::Join;
 
         let target = (&entities, &player_s).join().nth(0).unwrap().0; // only player for now.
@@ -37,7 +37,7 @@ impl<'a> System<'a> for AggressionSystem {
             let damage = attack.damage(&wieldable_s);
             target_health.0 -= damage;
             // TODO: Better error handling.
-            hit_s.insert(target, Affected(entity));
+            affected_s.insert(target, Affected(entity)).unwrap();
 
             println!
             (
@@ -50,7 +50,7 @@ impl<'a> System<'a> for AggressionSystem {
             );
             if target_health.has_died() {
                 // TODO: Better error handling.
-                entities.delete(target);
+                entities.delete(target).unwrap();
                 println!
                 (
                     "{}",

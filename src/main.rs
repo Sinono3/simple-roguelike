@@ -23,6 +23,7 @@ use crate::creature::*;
 use crate::unanimate::*;
 use crate::shared::*;
 
+#[allow(unused_variables)]
 fn main() {
 	let terminal = terminal();
 	terminal.clear(ClearType::All);
@@ -35,7 +36,7 @@ fn main() {
 	world.register::<Affected>();
 	world.register::<Name>();
 	world.register::<Owned>();
-	world.register::<Salable>();
+	world.register::<Tradeable>();
 	world.register::<Wieldable>();
 	world.register::<Playable>();
     world.register::<U64Marker>();
@@ -111,8 +112,8 @@ fn main() {
 	// owning example (very simple)
 	world.exec(|mut data: WriteStorage<Owned>| {
 		// TODO: Better error handling.
-		data.insert(rusty_sword, Owned(servant));
-		data.insert(blood_sword, Owned(merchant));
+		data.insert(rusty_sword, Owned(servant)).unwrap();
+		data.insert(blood_sword, Owned(merchant)).unwrap();
 	});
 	// call maintain.
 

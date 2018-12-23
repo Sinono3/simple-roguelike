@@ -16,7 +16,7 @@ impl<'a> System<'a> for SaveSystem {
         ReadStorage<'a, Affected>,
         ReadStorage<'a, Name>,
         ReadStorage<'a, Owned>,
-        ReadStorage<'a, Salable>,
+        ReadStorage<'a, Tradeable>,
         ReadStorage<'a, Wieldable>,
         ReadStorage<'a, Playable>,
         ReadStorage<'a, U64Marker>,

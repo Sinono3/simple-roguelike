@@ -23,11 +23,13 @@ impl<'a> System<'a> for PlayabilitySystem {
         WriteStorage<'a, Owned>,
     );
 
-    fn run(&mut self, (entities, playable_s, name_s, mut health_s, mut attack_s, wieldable_s, mut hit_s, mut owned_s): Self::SystemData) {
+    fn run(&mut self, (entities, playable_s, name_s, mut health_s, mut attack_s, wieldable_s, mut affected_s, mut owned_s): Self::SystemData) {
         enum Command {
-            Affected(Entity),
+            Hit(Entity),
             Take(Entity),
+            Give(Entity, Entity),
             Wield(Entity),
+            Trade(Entity),
             Status,
         }
 
@@ -55,7 +57,7 @@ impl<'a> System<'a> for PlayabilitySystem {
                         match parts[0] {
                             "attack" | "hit" if parts.len() > 1 => {
                                 if let Some(f) = find(&name_s, &entities, parts[1]) {
-                                    break Command::Affected(f);
+                                    break Command::Hit(f);
                                 } else {
                                     println!("{}",
                                         style("Please write a correct target. ex: goblin")
@@ -68,7 +70,7 @@ impl<'a> System<'a> for PlayabilitySystem {
                                         .with(Color::DarkRed)
                                 ),
 
-                            "take" | "steal" => {
+                            "take" | "steal" if parts.len() > 1 => {
                                 if let Some(item) = find(&name_s, &entities, parts[1]) {
                                     break Command::Take(item);
                                 } else {
@@ -83,7 +85,33 @@ impl<'a> System<'a> for PlayabilitySystem {
                                     .with(Color::DarkRed)
                                 ),
 
-                            "wield" => {
+                            "give" if parts.len() > 2 => {
+                                if let Some(item) = find(&name_s, &entities, parts[1]) {
+                                    if let Some(receiver) = find(&name_s, &entities, parts[2]) {
+                                        break Command::Give(item, receiver);
+                                    } else {
+                                        println!("{}",
+                                            style("Please write an existing creature.")
+                                                .with(Color::DarkRed)
+                                        );
+                                    }
+                                } else {
+                                    println!("{}",
+                                        style("Please write an existing item.")
+                                            .with(Color::DarkRed)
+                                    );
+                                }
+                            }
+                            "give" if parts.len() > 1 => println!("{}",
+                                style("Please write a receiver. ex: mondhart")
+                                    .with(Color::DarkRed)
+                            ),
+                            "give" => println!("{}",
+                                style("Please write the gift and receiver. ex: rustysword mondhart")
+                                    .with(Color::DarkRed)
+                            ),
+
+                            "wield" if parts.len() > 1 => {
                                 if let Some(item) = find(&name_s, &entities, parts[1]) {
                                     break Command::Wield(item);
                                 } else {
@@ -111,7 +139,7 @@ impl<'a> System<'a> for PlayabilitySystem {
                 };
 
                 match command {
-                    Command::Affected(target) => {
+                    Command::Hit(target) => {
                         let (target_name, target_health) = {(
                             &name_s.get(target).unwrap().get(),
                             health_s.get_mut(target).unwrap()
@@ -121,7 +149,7 @@ impl<'a> System<'a> for PlayabilitySystem {
                         target_health.0 -= damage;
 
                         // TODO: Better error handling.
-                        hit_s.insert(target, Affected(entity));
+                        affected_s.insert(target, Affected(entity)).unwrap();
 
                         println!
                         (
@@ -135,7 +163,7 @@ impl<'a> System<'a> for PlayabilitySystem {
 
                         if target_health.has_died() {
                             // TODO: Better error handling.
-                            entities.delete(target);
+                            entities.delete(target).unwrap();
                             println!
                             (
                                 "{}",
@@ -160,6 +188,9 @@ impl<'a> System<'a> for PlayabilitySystem {
                         if let Some(owned) = owned_s.get_mut(e) {
                             let owner_name = name_s.get(owned.0).unwrap().get();
 
+                            // TODO: Better error handling.
+                            affected_s.insert(owned.0, Affected(entity)).unwrap();
+
                             // temporary!
                             if let Some(att) = attack_s.get_mut(owned.0) {
                                 att.wielding = None;
@@ -182,10 +213,44 @@ impl<'a> System<'a> for PlayabilitySystem {
                                     name_s.get(e).unwrap().get()
                                 )).with(Color::Magenta)
                             );
-                            owned_s.insert(e, Owned(entity));
+                            // TODO: better error handling
+                            owned_s.insert(e, Owned(entity)).unwrap();
                         }
 
                         action_points -= 1;
+                    }
+                    Command::Give(i, r) => {
+                        if let Some(owned) = owned_s.get_mut(i) {
+                            if owned.0 == entity {
+                                let receiver_name = name_s.get(r).unwrap().get();
+
+                                // TODO: Better error handling.
+                                affected_s.insert(owned.0, Affected(entity)).unwrap();
+
+                                // temporary!
+                                if let Some(att) = attack_s.get_mut(owned.0) {
+                                    att.wielding = None;
+                                }
+
+                                owned.0 = r;
+
+                                println!("{}",
+                                    style(format!("{} has given {} to {}!",
+                                        name.get(),
+                                        name_s.get(i).unwrap().get(),
+                                        receiver_name
+                                    )).with(Color::Magenta)
+                                );
+
+                                action_points -= 1;
+                                continue;
+                                // call maintain.
+                            }
+                        }
+                        println!("{}",
+                            style("You can't give what you don't own!")
+                                .with(Color::DarkRed)
+                        );
                     }
                     Command::Wield(e) => {
                         if let Some(owned) = owned_s.get_mut(e) {
@@ -208,6 +273,9 @@ impl<'a> System<'a> for PlayabilitySystem {
                             style(format!("{} doesn't own that!", name.get()))
                                 .with(Color::DarkRed)
                         );
+                    }
+                    Command::Trade(e) => {
+
                     }
                     Command::Status => {}
                 }

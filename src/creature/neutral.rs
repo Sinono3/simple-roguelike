@@ -34,11 +34,11 @@ impl<'a> System<'a> for NeutralitySystem {
         ReadStorage<'a, Wieldable>
     );
 
-    fn run(&mut self, (entities, mut neutral_s, name_s, mut health_s, mut hit_s, attack_s, wieldable_s): Self::SystemData) {
+    fn run(&mut self, (entities, mut neutral_s, name_s, mut health_s, mut affected_s, attack_s, wieldable_s): Self::SystemData) {
         use specs::Join;
 
         for (entity, mut neutral, name, attack) in (&entities, &mut neutral_s, &name_s, &attack_s).join() {
-            if let Some(hit) = hit_s.get(entity) {
+            if let Some(hit) = affected_s.get(entity) {
                 neutral.target = Some(hit.0);
             }
 
@@ -52,7 +52,7 @@ impl<'a> System<'a> for NeutralitySystem {
                 let damage = attack.damage(&wieldable_s);
                 target_health.0 -= damage;
                 // TODO: Better error handling.
-                hit_s.insert(target, Affected(entity));
+                affected_s.insert(target, Affected(entity)).unwrap();
 
                 println!
                 (
@@ -66,7 +66,7 @@ impl<'a> System<'a> for NeutralitySystem {
 
                 if target_health.has_died() {
                     // TODO: Better error handling.
-                    entities.delete(target);
+                    entities.delete(target).unwrap();
                     println!
                     (
                         "{}",
