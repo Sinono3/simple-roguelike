@@ -1,5 +1,7 @@
 use specs::prelude::*;
 
+use crossterm::style::{Color, style};
+
 use crate::creature::Attack;
 use crate::shared::{Name, Health, Affected};
 use crate::unanimate::{Wieldable, Owned};
@@ -41,7 +43,11 @@ impl<'a> System<'a> for PlayabilitySystem {
                     let mut input = String::new();
 
                     loop {
-                        print!("What will {} do? ", name.get());
+                        print!("{}",
+                            style(format!("What will {} do? ",
+                                name.get()
+                            )).with(Color::DarkGreen)
+                        );
                         io::stdout().flush().unwrap();
                         io::stdin().read_line(&mut input).unwrap();
                     	let parts: Vec<&str> = input.trim().split(' ').collect();
@@ -51,32 +57,53 @@ impl<'a> System<'a> for PlayabilitySystem {
                                 if let Some(f) = find(&name_s, &entities, parts[1]) {
                                     break Command::Affected(f);
                                 } else {
-                                    println!("Please write a correct target. ex: goblin");
+                                    println!("{}",
+                                        style("Please write a correct target. ex: goblin")
+                                            .with(Color::DarkRed)
+                                    );
                                 }
                             }
-                            "attack" | "hit" => println!("Please write a target. ex: goblin"),
+                            "attack" | "hit" => println!("{}",
+                                    style("Please write a target. ex: goblin")
+                                        .with(Color::DarkRed)
+                                ),
 
                             "take" | "steal" => {
                                 if let Some(item) = find(&name_s, &entities, parts[1]) {
                                     break Command::Take(item);
                                 } else {
-                                    println!("Please write a correct target. ex: golden-ring");
+                                    println!("{}",
+                                        style("Please write an existing item.")
+                                            .with(Color::DarkRed)
+                                    );
                                 }
                             }
-                            "take" | "steal" => println!("Please write an item. ex: golden-ring"),
+                            "take" | "steal" => println!("{}",
+                                    style("Please write an item. ex: goldenring")
+                                    .with(Color::DarkRed)
+                                ),
 
                             "wield" => {
                                 if let Some(item) = find(&name_s, &entities, parts[1]) {
                                     break Command::Wield(item);
                                 } else {
-                                    println!("Please write a correct target. ex: rusty-sword");
+                                    println!("{}",
+                                        style("Please write an existing weapon.")
+                                            .with(Color::DarkRed)
+                                    );
                                 }
                             }
-                            "wield" => println!("Please write an item. ex: rustysword"),
+                            "wield" => println!("{}",
+                                    style("Please write an item. ex: rustysword")
+                                    .with(Color::DarkRed)
+                                ),
 
                             "status" => break Command::Status,
 
-                            _ => println!("Please write an existing command."),
+                            _ => println!("{}",
+                                    style("Please write an existing command.")
+                                    .with(Color::DarkRed)
+                                ),
                         }
 
                         input.clear();
@@ -98,10 +125,12 @@ impl<'a> System<'a> for PlayabilitySystem {
 
                         println!
                         (
-                            "{} hit {} for {} damage!",
-                            name.get(),
-                            target_name,
-                            damage
+                            "{}",
+                            style(format!("{} hit {} for {} damage!",
+                                name.get(),
+                                target_name,
+                                damage
+                            )).with(Color::Green)
                         );
 
                         if target_health.has_died() {
@@ -109,15 +138,19 @@ impl<'a> System<'a> for PlayabilitySystem {
                             entities.delete(target);
                             println!
                             (
-                                "{} has died!",
-                                target_name
+                                "{}",
+                                style(format!("{} has died!",
+                                    target_name
+                                )).with(Color::Green)
                             );
                         } else {
                             println!
                             (
-                                "{} now has {} hitpoints.",
-                                target_name,
-                                target_health.0
+                                "{}",
+                                style(format!("{} now has {} hitpoints.",
+                                    target_name,
+                                    target_health.0
+                                )).with(Color::Cyan)
                             );
                         }
 
@@ -134,16 +167,20 @@ impl<'a> System<'a> for PlayabilitySystem {
 
                             owned.0 = entity;
 
-                            println!("{} has stolen {} from {}!",
-                                name.get(),
-                                name_s.get(e).unwrap().get(),
-                                owner_name
+                            println!("{}",
+                                style(format!("{} has stolen {} from {}!",
+                                    name.get(),
+                                    name_s.get(e).unwrap().get(),
+                                    owner_name
+                                )).with(Color::Magenta)
                             );
                             // call maintain.
                         } else {
-                            println!("{} has taken {}.",
-                                name.get(),
-                                name_s.get(e).unwrap().get()
+                            println!("{}",
+                                style(format!("{} has taken {}.",
+                                    name.get(),
+                                    name_s.get(e).unwrap().get()
+                                )).with(Color::Magenta)
                             );
                             owned_s.insert(e, Owned(entity));
                         }
@@ -153,9 +190,11 @@ impl<'a> System<'a> for PlayabilitySystem {
                     Command::Wield(e) => {
                         if let Some(owned) = owned_s.get_mut(e) {
                             if owned.0 == entity {
-                                println!("{} has equipped the {}.",
-                                    name.get(),
-                                    name_s.get(e).unwrap().get()
+                                println!("{}",
+                                    style(format!("{} has equipped the {}.",
+                                        name.get(),
+                                        name_s.get(e).unwrap().get()
+                                    )).with(Color::Magenta)
                                 );
 
                                 // should support un-attack creatures with if-let, no unwrap.
@@ -165,7 +204,10 @@ impl<'a> System<'a> for PlayabilitySystem {
                                 continue;
                             }
                         }
-                        println!("{} doesn't own that!", name.get());
+                        println!("{}",
+                            style(format!("{} doesn't own that!", name.get()))
+                                .with(Color::DarkRed)
+                        );
                     }
                     Command::Status => {}
                 }

@@ -1,5 +1,7 @@
 use specs::prelude::*;
 
+use crossterm::style::{Color, style};
+
 use crate::creature::{Playable, Attack};
 use crate::shared::*;
 use crate::unanimate::Wieldable;
@@ -39,25 +41,31 @@ impl<'a> System<'a> for AggressionSystem {
 
             println!
             (
-                "{} hit {} for {} damage!",
-                name.get(),
-                target_name,
-                damage
+                "{}",
+                style(format!("{} hit {} for {} damage!",
+                    name.get(),
+                    target_name,
+                    damage
+                )).with(Color::Red)
             );
             if target_health.has_died() {
                 // TODO: Better error handling.
                 entities.delete(target);
                 println!
                 (
-                    "{} has died!",
-                    target_name
+                    "{}",
+                    style(format!("{} has died!",
+                        target_name
+                    )).with(Color::Red)
                 );
             } else {
                 println!
                 (
-                    "{} now has {} hitpoints.",
-                    target_name,
-                    target_health.0
+                    "{}",
+                    style(format!("{} now has {} hitpoints.",
+                        target_name,
+                        target_health.0
+                    )).with(Color::Cyan)
                 );
             }
         }

@@ -1,0 +1,128 @@
+[
+  {
+    "marker": 0,
+    "components": [
+      {
+        "raw_name": "rustysword",
+        "kind": "NonUnique"
+      },
+      18,
+      null,
+      null,
+      null,
+      null,
+      2,
+      null,
+      {
+        "damage": 2
+      },
+      null
+    ]
+  },
+  {
+    "marker": 1,
+    "components": [
+      {
+        "raw_name": "bloodsword",
+        "kind": "Unique"
+      },
+      90,
+      null,
+      null,
+      null,
+      null,
+      5,
+      null,
+      {
+        "damage": 8
+      },
+      null
+    ]
+  },
+  {
+    "marker": 2,
+    "components": [
+      {
+        "raw_name": "Wigfrid",
+        "kind": "Unique"
+      },
+      20,
+      {
+        "strength": 2,
+        "wielding": 0
+      },
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "marker": 3,
+    "components": [
+      {
+        "raw_name": "Mondhart",
+        "kind": "Unique"
+      },
+      35,
+      {
+        "strength": 6,
+        "wielding": null
+      },
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "marker": 4,
+    "components": [
+      {
+        "raw_name": "goblin",
+        "kind": "NonUnique"
+      },
+      12,
+      {
+        "strength": 1,
+        "wielding": null
+      },
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  {
+    "marker": 5,
+    "components": [
+      {
+        "raw_name": "merchant",
+        "kind": "NonUnique"
+      },
+      38,
+      {
+        "strength": 1,
+        "wielding": 1
+      },
+      null,
+      {
+        "target": null
+      },
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  }
+]

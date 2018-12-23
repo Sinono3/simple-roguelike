@@ -28,7 +28,7 @@ impl Attack {
 	}
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct AttackData<M> {
 	strength: i32,
     wielding: Option<M>

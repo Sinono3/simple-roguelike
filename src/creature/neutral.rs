@@ -3,6 +3,8 @@ use specs::prelude::*;
 use specs::error::NoError;
 use specs::saveload::{Marker, ConvertSaveload};
 
+use crossterm::style::{Color, style};
+
 use crate::creature::Attack;
 use crate::shared::{Name, Health, Affected};
 use crate::unanimate::Wieldable;
@@ -54,10 +56,12 @@ impl<'a> System<'a> for NeutralitySystem {
 
                 println!
                 (
-                    "{} hit {} for {} damage!",
-                    name.get(),
-                    target_name,
-                    damage
+                    "{}",
+                    style(format!("{} hit {} for {} damage!",
+                        name.get(),
+                        target_name,
+                        damage
+                    )).with(Color::Red)
                 );
 
                 if target_health.has_died() {
@@ -65,15 +69,19 @@ impl<'a> System<'a> for NeutralitySystem {
                     entities.delete(target);
                     println!
                     (
-                        "{} has died!",
-                        target_name
+                        "{}",
+                        style(format!("{} has died!",
+                            target_name
+                        )).with(Color::Red)
                     );
                 } else {
                     println!
                     (
-                        "{} now has {} hitpoints.",
-                        target_name,
-                        target_health.0
+                        "{}",
+                        style(format!("{} now has {} hitpoints.",
+                            target_name,
+                            target_health.0
+                        )).with(Color::Cyan)
                     );
                 }
             }
@@ -81,7 +89,7 @@ impl<'a> System<'a> for NeutralitySystem {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct NeutralData<M> {
     target: Option<M>
 }

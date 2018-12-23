@@ -7,7 +7,7 @@ use specs::saveload::{Marker, ConvertSaveload};
 #[storage(DenseVecStorage)]
 pub struct Owned(pub Entity);
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct OwnedData<M>(M);
 
 impl<M: Marker + Serialize> ConvertSaveload<M> for Owned

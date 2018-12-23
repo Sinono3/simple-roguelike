@@ -4,12 +4,14 @@ mod neutral;
 mod playable;
 
 pub use self::attack::Attack;
+pub use self::attack::AttackData;
 
 pub use self::aggressive::AggressiveBehaviour;
 pub use self::aggressive::AggressionSystem;
 
 pub use self::neutral::NeutralBehaviour;
 pub use self::neutral::NeutralitySystem;
+pub use self::neutral::NeutralData;
 
 pub use self::playable::Playable;
 pub use self::playable::PlayabilitySystem;
