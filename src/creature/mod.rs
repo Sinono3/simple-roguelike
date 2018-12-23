@@ -1,10 +1,10 @@
-mod attack;
+mod combatant;
 mod aggressive;
 mod neutral;
 mod playable;
 
-pub use self::attack::Attack;
-pub use self::attack::AttackData;
+pub use self::combatant::Combatant;
+pub use self::combatant::CombatantData;
 
 pub use self::aggressive::AggressiveBehaviour;
 pub use self::aggressive::AggressionSystem;

@@ -5,7 +5,7 @@ use specs::saveload::{Marker, ConvertSaveload};
 
 use crossterm::style::{Color, style};
 
-use crate::creature::Attack;
+use crate::creature::Combatant;
 use crate::shared::{Name, Health, Affected};
 use crate::unanimate::Wieldable;
 
@@ -30,7 +30,7 @@ impl<'a> System<'a> for NeutralitySystem {
         ReadStorage<'a, Name>,
         WriteStorage<'a, Health>,
         WriteStorage<'a, Affected>,
-        ReadStorage<'a, Attack>,
+        ReadStorage<'a, Combatant>,
         ReadStorage<'a, Wieldable>
     );
 

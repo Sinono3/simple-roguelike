@@ -17,7 +17,6 @@ use specs::saveload::{U64Marker, U64MarkerAllocator, MarkedBuilder};
 mod creature;
 mod shared;
 mod unanimate;
-mod prefab;
 
 use crate::creature::*;
 use crate::unanimate::*;
@@ -31,7 +30,7 @@ fn main() {
 	let mut world = World::new();
 	world.register::<AggressiveBehaviour>();
 	world.register::<NeutralBehaviour>();
-	world.register::<Attack>();
+	world.register::<Combatant>();
 	world.register::<Health>();
 	world.register::<Affected>();
 	world.register::<Name>();
@@ -64,7 +63,7 @@ fn main() {
 	let servant = world.create_entity()
 		.with(Name::new("Wigfrid", true))
 		.with(Health(20))
-		.with(Attack {
+		.with(Combatant {
 			strength: 2,
 			wielding: None
 		})
@@ -75,7 +74,7 @@ fn main() {
 	let homeless = world.create_entity()
 		.with(Name::new("Mondhart", true))
 		.with(Health(35))
-		.with(Attack {
+		.with(Combatant {
 			strength: 6,
 			wielding: None
 		})
@@ -87,7 +86,7 @@ fn main() {
 		.create_entity()
 		.with(Name::new("goblin", false))
 		.with(Health(12))
-		.with(Attack {
+		.with(Combatant {
 			strength: 1,
 			wielding: None
 		})
@@ -99,7 +98,7 @@ fn main() {
 		.create_entity()
 		.with(Name::new("merchant", false))
 		.with(Health(38))
-		.with(Attack {
+		.with(Combatant {
 			strength: 1,
 			wielding: None
 		})
@@ -118,7 +117,7 @@ fn main() {
 	// call maintain.
 
 	// auto-wielding example.
-	world.exec(|(mut att, own): (WriteStorage<Attack>, ReadStorage<Owned>)| {
+	world.exec(|(mut att, own): (WriteStorage<Combatant>, ReadStorage<Owned>)| {
 		if let Some(owned) = own.get(rusty_sword) {
 			att.get_mut(owned.0).unwrap().wielding = Some(rusty_sword);
 		}

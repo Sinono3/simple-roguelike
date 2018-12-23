@@ -2,7 +2,7 @@ use specs::prelude::*;
 
 use crossterm::style::{Color, style};
 
-use crate::creature::{Playable, Attack};
+use crate::creature::{Playable, Combatant};
 use crate::shared::*;
 use crate::unanimate::Wieldable;
 
@@ -17,7 +17,7 @@ impl<'a> System<'a> for AggressionSystem {
         ReadStorage<'a, Playable>,
         ReadStorage<'a, Name>,
         ReadStorage<'a, AggressiveBehaviour>,
-        ReadStorage<'a, Attack>,
+        ReadStorage<'a, Combatant>,
         ReadStorage<'a, Wieldable>,
         WriteStorage<'a, Health>,
         WriteStorage<'a, Affected>,

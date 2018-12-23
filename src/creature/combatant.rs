@@ -8,12 +8,12 @@ use crate::unanimate::Wieldable;
 
 #[derive(Component, Debug, Clone)]
 #[storage(DenseVecStorage)]
-pub struct Attack {
+pub struct Combatant {
 	pub strength: i32,
 	pub wielding: Option<Entity>
 }
 
-impl Attack {
+impl Combatant {
 	pub fn damage<T: GenericReadStorage<Component = Wieldable>>(&self, wieldable_s: &T) -> i32 {
 		if let Some(wield_id) = self.wielding {
 			if let Some(wieldable) = wieldable_s.get(wield_id) {
@@ -29,14 +29,14 @@ impl Attack {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct AttackData<M> {
+pub struct CombatantData<M> {
 	strength: i32,
     wielding: Option<M>
 }
-impl<M: Marker + Serialize> ConvertSaveload<M> for Attack
+impl<M: Marker + Serialize> ConvertSaveload<M> for Combatant
     where for<'de> M: Deserialize<'de>,
 {
-    type Data = AttackData<M>;
+    type Data = CombatantData<M>;
     type Error = NoError;
 
     fn convert_into<F>(&self, mut ids: F) -> Result<Self::Data, Self::Error>
@@ -46,12 +46,12 @@ impl<M: Marker + Serialize> ConvertSaveload<M> for Attack
         if let Some(wielding) = self.wielding {
             let marker = ids(wielding).unwrap();
 
-            Ok(AttackData {
+            Ok(CombatantData {
 				strength: self.strength,
                 wielding: Some(marker)
             })
         } else {
-            Ok(AttackData {
+            Ok(CombatantData {
 				strength: self.strength,
                 wielding: None
             })
@@ -64,12 +64,12 @@ impl<M: Marker + Serialize> ConvertSaveload<M> for Attack
     {
         if let Some(wielding) = data.wielding {
             let entity = ids(wielding).unwrap();
-            Ok(Attack {
+            Ok(Combatant {
 				strength: data.strength,
                 wielding: Some(entity)
             })
         } else {
-            Ok(Attack {
+            Ok(Combatant {
 				strength: data.strength,
                 wielding: None
             })

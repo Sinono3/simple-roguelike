@@ -2,7 +2,7 @@ use specs::prelude::*;
 
 use crossterm::style::{Color, style};
 
-use crate::creature::Attack;
+use crate::creature::Combatant;
 use crate::shared::{Name, Health, Affected};
 use crate::unanimate::{Wieldable, Owned};
 
@@ -17,7 +17,7 @@ impl<'a> System<'a> for PlayabilitySystem {
         ReadStorage<'a, Playable>,
         ReadStorage<'a, Name>,
         WriteStorage<'a, Health>,
-        WriteStorage<'a, Attack>,
+        WriteStorage<'a, Combatant>,
         WriteStorage<'a, Wieldable>,
         WriteStorage<'a, Affected>,
         WriteStorage<'a, Owned>,
