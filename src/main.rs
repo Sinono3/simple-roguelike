@@ -36,6 +36,7 @@ fn main() {
 	world.register::<Name>();
 	world.register::<Owned>();
 	world.register::<Tradeable>();
+	world.register::<Trader>();
 	world.register::<Wieldable>();
 	world.register::<Playable>();
     world.register::<U64Marker>();
@@ -48,6 +49,9 @@ fn main() {
 		.with(Wieldable {
 			damage: 2
 		})
+		.with(Tradeable {
+			worth: 10
+		})
 		.marked::<U64Marker>()
 		.build();
 
@@ -56,6 +60,9 @@ fn main() {
 		.with(Health(90))
 		.with(Wieldable {
 			damage: 8
+		})
+		.with(Tradeable {
+			worth: 470
 		})
 		.marked::<U64Marker>()
 		.build();
@@ -71,7 +78,7 @@ fn main() {
 		.marked::<U64Marker>()
 		.build();
 
-	let homeless = world.create_entity()
+	/*let homeless = world.create_entity()
 		.with(Name::new("Mondhart", true))
 		.with(Health(35))
 		.with(Combatant {
@@ -80,7 +87,7 @@ fn main() {
 		})
 		.with(Playable)
 		.marked::<U64Marker>()
-		.build();
+		.build();*/
 
 	let goblin = world
 		.create_entity()
@@ -103,6 +110,7 @@ fn main() {
 			wielding: None
 		})
 		.with(NeutralBehaviour::new())
+		.with(Trader { interest: 15 })
 		.marked::<U64Marker>()
 		.build();
 

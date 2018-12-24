@@ -2,9 +2,9 @@ use specs::prelude::*;
 
 use crossterm::style::{Color, style};
 
-use crate::creature::Combatant;
+use crate::creature::{Trader, Combatant};
 use crate::shared::{Name, Health, Affected};
-use crate::unanimate::{Wieldable, Owned};
+use crate::unanimate::{Tradeable, Wieldable, Owned};
 
 #[derive(Component, Debug, Default, Clone, Deserialize, Serialize)]
 #[storage(NullStorage)]
@@ -18,12 +18,16 @@ impl<'a> System<'a> for PlayabilitySystem {
         ReadStorage<'a, Name>,
         WriteStorage<'a, Health>,
         WriteStorage<'a, Combatant>,
+        WriteStorage<'a, Trader>,
         WriteStorage<'a, Wieldable>,
+        ReadStorage<'a, Tradeable>,
         WriteStorage<'a, Affected>,
         WriteStorage<'a, Owned>,
     );
 
-    fn run(&mut self, (entities, playable_s, name_s, mut health_s, mut attack_s, wieldable_s, mut affected_s, mut owned_s): Self::SystemData) {
+    fn run(&mut self, (entities, playable_s, name_s, mut health_s, mut attack_s, mut trader_s,
+                       wieldable_s, tradeable_s, mut affected_s, mut owned_s): Self::SystemData) {
+        // TODO: Each action should be put in it's respective system. ex: GiveSystem
         enum Command {
             Hit(Entity),
             Take(Entity),
@@ -33,7 +37,6 @@ impl<'a> System<'a> for PlayabilitySystem {
             Status,
         }
 
-        use specs::Join;
         for (entity, _, name) in (&entities, &playable_s, &name_s).join() {
             let mut action_points = 2;
 
@@ -126,6 +129,21 @@ impl<'a> System<'a> for PlayabilitySystem {
                                     .with(Color::DarkRed)
                                 ),
 
+                            "trade" if parts.len() > 1 => {
+                                    if let Some(item) = find(&name_s, &entities, parts[1]) {
+                                        break Command::Trade(item);
+                                    } else {
+                                        println!("{}",
+                                            style("Please write an existing trader.")
+                                                .with(Color::DarkRed)
+                                        );
+                                    }
+                            }
+                            "trade" => println!("{}",
+                                style("Please write an trader. ex: merchant")
+                                    .with(Color::DarkRed)
+                            ),
+
                             "status" => break Command::Status,
 
                             _ => println!("{}",
@@ -193,7 +211,9 @@ impl<'a> System<'a> for PlayabilitySystem {
 
                             // temporary!
                             if let Some(att) = attack_s.get_mut(owned.0) {
-                                att.wielding = None;
+                                if att.wielding == Some(e) {
+                                    att.wielding = None;
+                                }
                             }
 
                             owned.0 = entity;
@@ -229,7 +249,9 @@ impl<'a> System<'a> for PlayabilitySystem {
 
                                 // temporary!
                                 if let Some(att) = attack_s.get_mut(owned.0) {
-                                    att.wielding = None;
+                                    if att.wielding == Some(i) {
+                                        att.wielding = None;
+                                    }
                                 }
 
                                 owned.0 = r;
@@ -275,7 +297,52 @@ impl<'a> System<'a> for PlayabilitySystem {
                         );
                     }
                     Command::Trade(e) => {
+                        if let Some(trader) = trader_s.get(e) {
+                            println!("{}",
+                                style("Items on stock:")
+                                    .with(Color::Yellow)
+                            );
 
+                            let stock = Trader::stock(e, &entities, &owned_s, &tradeable_s);
+                            for item in stock {
+                                let item_name = name_s.get(item).unwrap().get();
+                                let price = trader.interest(tradeable_s.get(item).unwrap().worth);
+
+                                println!("{}",
+                                    style(format!("{} costs {} gold.",
+                                        item_name,
+                                        price
+                                    )).with(Color::Yellow)
+                                );
+
+                                if yes_no("Would you like to buy this item? ") {
+                                    // temporary replacement for item maintaining.
+                                    if let Some(att) = attack_s.get_mut(e) {
+                                        if att.wielding == Some(item) {
+                                            att.wielding = None;
+                                        }
+                                    }
+
+                                    // TODO: Should check and remove gold from player.
+
+                                    owned_s.get_mut(item).unwrap().0 = entity;
+
+                                    println!("{}",
+                                        style(format!("{} has bought {} for {} gold.",
+                                            name.get(),
+                                            item_name,
+                                            price
+                                        )).with(Color::Magenta)
+                                    );
+                                }
+                            }
+                            action_points -= 1;
+                        } else {
+                            println!("{}",
+                                style("They are not a trader.")
+                                    .with(Color::DarkRed)
+                            );
+                        }
                     }
                     Command::Status => {}
                 }
@@ -292,4 +359,28 @@ fn find(name_s: &ReadStorage<Name>, entities: &Entities, name: &str) -> Option<E
         }
     }
     found
+}
+fn yes_no(queue: &str) -> bool {
+    use std::io;
+    use std::io::prelude::*;
+    let mut input = String::new();
+
+    loop {
+        print!("{}",
+            style(queue)
+                .with(Color::DarkGreen)
+        );
+        io::stdout().flush().unwrap();
+        io::stdin().read_line(&mut input).unwrap();
+
+        match input.trim() {
+            "y" | "yes" => break true,
+            "n" | "no" => break false,
+            _ => println!("{}",
+                    style("Please answer yes or no.")
+                        .with(Color::DarkRed)
+                )
+        }
+        input.clear();
+    }
 }
